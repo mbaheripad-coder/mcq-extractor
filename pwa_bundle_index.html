@@ -1,0 +1,5164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>Strict MCQ Extractor — SpongeBob &amp; Patrick Edition (v34 PWA)</title>
+  <link rel="manifest" href="./manifest.json">
+  <meta name="theme-color" content="#031a24">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="MCQ Extractor">
+  <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
+  <link rel="apple-touch-icon" href="./icon-192.png">
+  <script id="pdfjs-primary" src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" onerror="window.__loadPdfJsFallback && window.__loadPdfJsFallback()"></script>
+  <script>
+    window.__pdfJsWorkerUrls = [
+      'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js',
+      'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js',
+      'https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js'
+    ];
+    window.__pdfJsCdnFallbackIdx = 0;
+    window.__loadPdfJsFallback = function() {
+      const fallbacks = [
+        'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js',
+        'https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.min.js'
+      ];
+      if (window.__pdfJsCdnFallbackIdx >= fallbacks.length) return;
+      const idx = window.__pdfJsCdnFallbackIdx++;
+      const s = document.createElement('script');
+      s.src = fallbacks[idx];
+      s.onload = function() {
+        if (typeof pdfjsLib !== 'undefined') {
+          pdfjsLib.GlobalWorkerOptions.workerSrc = window.__pdfJsWorkerUrls[idx + 1] || window.__pdfJsWorkerUrls[0];
+        }
+      };
+      s.onerror = window.__loadPdfJsFallback;
+      document.head.appendChild(s);
+    };
+  </script>
+  <style>
+    :root {
+      --bg-main: #031a24;
+      --bg-image:
+        radial-gradient(circle at 15% 8%, rgba(255, 213, 51, 0.14) 0%, transparent 40%),
+        radial-gradient(circle at 88% 14%, rgba(255, 105, 150, 0.16) 0%, transparent 42%),
+        linear-gradient(180deg, #05384d 0%, #04222e 52%, #2a2310 100%);
+      --bg-card: rgba(6, 40, 54, 0.94);
+      --bg-box: rgba(12, 72, 90, 0.72);
+      --bg-input: #05222e;
+      --text-main: #fff6d6;
+      --text-muted: #9fd3da;
+      --six-eyes: #ffd51f;
+      --lapse-blue: #19b5c8;
+      --reversal-red: #ff6378;
+      --hollow-purple: #e0457b;
+      --emerald-ok: #10b981;
+      --amber-warn: #f59e0b;
+      --border-color: rgba(255, 213, 51, 0.30);
+      --card-glow: 0 0 28px rgba(255, 213, 51, 0.12), 0 0 55px rgba(25, 181, 200, 0.14);
+    }
+
+    body.light-theme {
+      --bg-main: #bfe9fb;
+      --bg-image: linear-gradient(180deg, #8fd8f5 0%, #c9f0ff 45%, #fff2b8 80%, #f3d98b 100%);
+      --bg-card: #fffdf2;
+      --bg-box: #fff3b8;
+      --bg-input: #ffffff;
+      --text-main: #3b2a14;
+      --text-muted: #6e5a36;
+      --six-eyes: #b45f06;
+      --lapse-blue: #0e9fb3;
+      --reversal-red: #d6304f;
+      --hollow-purple: #d6336c;
+      --emerald-ok: #059669;
+      --amber-warn: #d97706;
+      --border-color: #f0c431;
+      --card-glow: 0 8px 24px rgba(180, 95, 6, 0.18);
+    }
+
+    * { box-sizing: border-box; font-family: 'Chalkboard SE', 'Comic Neue', 'Trebuchet MS', system-ui, -apple-system, sans-serif; }
+
+    body {
+      max-width: 650px;
+      margin: 16px auto;
+      padding: 0 12px 36px 12px;
+      background-color: var(--bg-main);
+      background-image: var(--bg-image);
+      background-attachment: fixed;
+      color: var(--text-main);
+      transition: background 0.25s ease, color 0.25s ease;
+    }
+
+    .card {
+      background: var(--bg-card);
+      padding: 20px 18px;
+      border-radius: 16px;
+      border: 1px solid var(--border-color);
+      box-shadow: var(--card-glow);
+      backdrop-filter: blur(12px);
+      position: relative;
+      overflow: hidden;
+      z-index: 1;
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 5px;
+      background: linear-gradient(90deg, var(--six-eyes), var(--hollow-purple), var(--reversal-red));
+    }
+
+    .header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .brand-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .infinity-emblem {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      background:
+        radial-gradient(circle at 28% 32%, rgba(150, 105, 0, 0.45) 0 3px, transparent 4px),
+        radial-gradient(circle at 68% 62%, rgba(150, 105, 0, 0.40) 0 4px, transparent 5px),
+        radial-gradient(circle at 40% 78%, rgba(150, 105, 0, 0.35) 0 2.5px, transparent 3.5px),
+        #ffe135;
+      border: 2px solid #c98f00;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: var(--six-eyes);
+      text-shadow: 0 0 10px rgba(255, 213, 51, 0.7);
+      flex-shrink: 0;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 1.15rem;
+      font-weight: 800;
+      letter-spacing: 0.2px;
+      background: linear-gradient(90deg, var(--six-eyes), var(--hollow-purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .subtitle {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+      font-weight: 600;
+      letter-spacing: 0.4px;
+    }
+
+    .theme-btn {
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border-color);
+      background: var(--bg-box);
+      color: var(--text-main);
+      font-size: 0.75rem;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    /* CRASH / SESSION RECOVERY BANNER */
+    .recovery-banner {
+      display: none;
+      margin-bottom: 12px;
+      padding: 11px 12px;
+      border-radius: 11px;
+      background: rgba(16, 185, 129, 0.16);
+      border: 1.5px solid rgba(16, 185, 129, 0.6);
+      color: var(--text-main);
+      font-size: 0.8rem;
+      line-height: 1.42;
+    }
+    .recovery-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    /* API KEY VAULT & SAVED KEYS CHIPS WITH HEALTH METERS */
+    .key-vault-box {
+      margin-top: 10px;
+      padding: 12px;
+      background: var(--bg-box);
+      border: 1.5px solid var(--border-color);
+      border-radius: 12px;
+    }
+
+    .key-vault-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+      flex-wrap: wrap;
+    }
+
+    .key-vault-header label {
+      margin: 0;
+      font-size: 0.88rem;
+    }
+
+    .key-count-badge {
+      font-size: 0.73rem;
+      font-weight: 800;
+      padding: 3px 9px;
+      border-radius: 999px;
+      background: rgba(16, 185, 129, 0.16);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.4);
+    }
+
+    body.light-theme .key-count-badge {
+      color: #047857;
+    }
+
+    .quota-reset-banner {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 10px;
+      margin-bottom: 8px;
+      border-radius: 8px;
+      background: var(--bg-input);
+      border: 1px solid var(--border-color);
+      font-size: 0.74rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      flex-wrap: wrap;
+    }
+
+    .key-add-row {
+      display: flex;
+      gap: 6px;
+      align-items: stretch;
+    }
+
+    .key-add-row input {
+      flex: 1;
+      padding: 10px 11px;
+      font-size: 0.86rem;
+    }
+
+    .btn-key-add {
+      padding: 0 13px;
+      border: 1px solid rgba(255, 213, 51, 0.45);
+      border-radius: 9px;
+      background: linear-gradient(135deg, #0e9fb3, #1c8fd6);
+      color: #fff;
+      font-weight: 800;
+      font-size: 0.8rem;
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .key-vault-actions {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr 0.9fr;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .btn-key-save {
+      padding: 9px 10px;
+      border: 1px solid rgba(16, 185, 129, 0.5);
+      border-radius: 8px;
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: #ffffff;
+      font-weight: 800;
+      font-size: 0.79rem;
+      cursor: pointer;
+      text-align: center;
+    }
+
+    .btn-key-util {
+      padding: 9px 8px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      background: var(--bg-input);
+      color: var(--text-main);
+      font-weight: 700;
+      font-size: 0.77rem;
+      cursor: pointer;
+      text-align: center;
+    }
+
+    .saved-keys-list {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      margin-top: 9px;
+      max-height: 240px;
+      overflow-y: auto;
+    }
+
+    .key-chip {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      padding: 8px 10px;
+      background: var(--bg-input);
+      border: 1px solid var(--border-color);
+      border-radius: 9px;
+      font-size: 0.79rem;
+    }
+
+    .key-chip-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .key-chip-left {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      min-width: 145px;
+      flex: 1;
+    }
+
+    .key-chip-num {
+      font-weight: 800;
+      color: var(--six-eyes);
+      white-space: nowrap;
+    }
+
+    .key-chip-val {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      color: var(--text-main);
+      font-size: 0.75rem;
+      word-break: break-all;
+    }
+
+    .key-pct-badge {
+      padding: 2px 7px;
+      border-radius: 999px;
+      font-size: 0.71rem;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .pct-high {
+      background: rgba(16, 185, 129, 0.18);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.45);
+    }
+    body.light-theme .pct-high { color: #047857; }
+
+    .pct-mid {
+      background: rgba(245, 158, 11, 0.18);
+      color: #fbbf24;
+      border: 1px solid rgba(245, 158, 11, 0.45);
+    }
+    body.light-theme .pct-mid { color: #b45309; }
+
+    .pct-low {
+      background: rgba(244, 63, 94, 0.18);
+      color: #fb7185;
+      border: 1px solid rgba(244, 63, 94, 0.45);
+    }
+    body.light-theme .pct-low { color: #be123c; }
+
+    .key-meter-track {
+      width: 100%;
+      height: 6px;
+      background: rgba(148, 163, 184, 0.18);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .key-meter-fill {
+      height: 100%;
+      border-radius: 999px;
+      transition: width 0.25s ease;
+    }
+
+    .key-chip-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.71rem;
+      color: var(--text-muted);
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .btn-key-del {
+      padding: 3px 8px;
+      border-radius: 6px;
+      border: 1px solid rgba(255, 99, 120, 0.4);
+      background: rgba(255, 99, 120, 0.14);
+      color: #fb7185;
+      font-size: 0.72rem;
+      font-weight: 800;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .key-save-toast {
+      display: none;
+      margin-top: 8px;
+      padding: 8px 10px;
+      border-radius: 8px;
+      background: rgba(16, 185, 129, 0.16);
+      border: 1px solid rgba(16, 185, 129, 0.45);
+      color: #34d399;
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    body.light-theme .key-save-toast {
+      color: #065f46;
+    }
+
+    /* LIVE EXTRACTION CONSUMPTION TELEMETRY BAR */
+    .consumption-live-box {
+      margin-top: 10px;
+      padding: 9px 11px;
+      border-radius: 9px;
+      background: var(--bg-input);
+      border: 1px solid var(--border-color);
+      font-size: 0.76rem;
+      color: var(--text-main);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    /* QUALITY / COMPLETENESS AUDIT BANNER */
+    .audit-banner {
+      display: none;
+      margin-top: 10px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      font-size: 0.79rem;
+      line-height: 1.45;
+    }
+    .audit-banner.audit-ok {
+      background: rgba(16, 185, 129, 0.14);
+      border: 1.5px solid rgba(16, 185, 129, 0.5);
+      color: var(--text-main);
+    }
+    .audit-banner.audit-warn {
+      background: rgba(245, 158, 11, 0.15);
+      border: 1.5px solid rgba(245, 158, 11, 0.6);
+      color: var(--text-main);
+    }
+
+    /* UNIVERSAL APK PASTE MODAL */
+    .paste-modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(2, 12, 18, 0.78);
+      backdrop-filter: blur(5px);
+      z-index: 9999;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .paste-modal-card {
+      width: 100%;
+      max-width: 480px;
+      background: var(--bg-card);
+      border: 2px solid var(--six-eyes);
+      border-radius: 14px;
+      padding: 16px;
+      box-shadow: 0 12px 35px rgba(0, 0, 0, 0.55);
+    }
+
+    .paste-modal-title {
+      font-size: 0.96rem;
+      font-weight: 800;
+      color: var(--six-eyes);
+      margin-bottom: 4px;
+    }
+
+    .paste-modal-sub {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+      line-height: 1.4;
+    }
+
+    .paste-modal-textarea {
+      width: 100%;
+      height: 120px;
+      background: var(--bg-input);
+      color: var(--text-main);
+      border: 1.5px dashed var(--six-eyes);
+      border-radius: 9px;
+      padding: 10px;
+      font-size: 0.86rem;
+      resize: vertical;
+    }
+
+    .paste-modal-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    /* OPENING SCREEN / MODE GATEWAY */
+    #openingScreen {
+      padding: 10px 2px 6px 2px;
+      text-align: center;
+    }
+
+    .opening-title {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--text-main);
+      margin-bottom: 4px;
+    }
+
+    .opening-sub {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+    }
+
+    .opening-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    @media (max-width: 480px) {
+      .opening-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .mode-card {
+      background: var(--bg-box);
+      border: 1.5px solid var(--border-color);
+      border-radius: 14px;
+      padding: 18px 14px;
+      text-align: left;
+      cursor: pointer;
+      transition: transform 0.16s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .mode-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--six-eyes);
+      box-shadow: 0 6px 20px rgba(255, 213, 51, 0.18);
+    }
+
+    .mode-card.book-card:hover {
+      border-color: #ff9ebb;
+      box-shadow: 0 6px 20px rgba(255, 105, 150, 0.25);
+    }
+
+    .mode-icon {
+      font-size: 1.65rem;
+      margin-bottom: 8px;
+      display: inline-block;
+    }
+
+    .mode-card h2 {
+      margin: 0 0 6px 0;
+      font-size: 1.02rem;
+      font-weight: 800;
+      color: var(--text-main);
+    }
+
+    .mode-card p {
+      margin: 0 0 10px 0;
+      font-size: 0.79rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    .mode-pill {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: rgba(255, 213, 51, 0.14);
+      color: var(--six-eyes);
+      border: 1px solid rgba(255, 213, 51, 0.3);
+    }
+
+    .mode-card.book-card .mode-pill {
+      background: rgba(255, 105, 150, 0.18);
+      color: #ffc2d6;
+      border-color: rgba(192, 132, 252, 0.35);
+    }
+
+    /* TOP MODE SWITCHER BAR */
+    .top-mode-bar {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      background: var(--bg-input);
+      padding: 5px;
+      border-radius: 11px;
+      border: 1px solid var(--border-color);
+      margin-bottom: 12px;
+    }
+
+    .top-mode-btn {
+      padding: 9px 8px;
+      border: none;
+      border-radius: 8px;
+      font-weight: 800;
+      font-size: 0.83rem;
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .top-mode-btn.active-quiz {
+      background: linear-gradient(135deg, #0e9fb3, #1c8fd6);
+      color: #ffffff;
+      box-shadow: 0 2px 10px rgba(37, 99, 235, 0.35);
+    }
+
+    .top-mode-btn.active-book {
+      background: linear-gradient(135deg, #e0457b, #e11d48);
+      color: #ffffff;
+      box-shadow: 0 2px 10px rgba(255, 105, 150, 0.4);
+    }
+
+    label {
+      display: block;
+      font-weight: 700;
+      margin-top: 13px;
+      margin-bottom: 5px;
+      font-size: 0.85rem;
+      color: var(--text-main);
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--border-color);
+      border-radius: 9px;
+      font-size: 0.91rem;
+      background: var(--bg-input);
+      color: var(--text-main);
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--six-eyes);
+      box-shadow: 0 0 0 2px rgba(255, 213, 51, 0.2);
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    @media (max-width: 440px) {
+      .grid-2 {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .tabs {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 5px;
+      margin-top: 6px;
+      background: var(--bg-input);
+      padding: 5px;
+      border-radius: 11px;
+      border: 1px solid var(--border-color);
+    }
+
+    .tabs.cols-2 {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .tab-btn {
+      padding: 9px 4px;
+      border: none;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.8rem;
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s ease;
+    }
+
+    .tab-btn.active {
+      background: linear-gradient(135deg, var(--lapse-blue), var(--hollow-purple));
+      color: #ffffff;
+      box-shadow: 0 2px 10px rgba(255, 105, 150, 0.35);
+    }
+
+    .input-box {
+      margin-top: 12px;
+      padding: 12px;
+      background: var(--bg-box);
+      border: 1px solid var(--border-color);
+      border-radius: 11px;
+    }
+
+    .input-box label { margin-top: 0; }
+
+    /* FILE NAMING BOX */
+    .naming-box {
+      margin-top: 12px;
+      padding: 11px 12px;
+      background: var(--bg-box);
+      border: 1px solid var(--border-color);
+      border-radius: 11px;
+    }
+
+    .naming-box label {
+      margin-top: 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .naming-input-wrap {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 5px;
+    }
+
+    .naming-suffix {
+      padding: 9px 10px;
+      border-radius: 8px;
+      background: rgba(255, 213, 51, 0.12);
+      border: 1px solid var(--border-color);
+      color: var(--six-eyes);
+      font-weight: 800;
+      font-size: 0.84rem;
+      flex-shrink: 0;
+    }
+
+    /* PRE-START CUSTOM BATCH NAMES EDITOR */
+    #customBatchNamesEditor {
+      display: none;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px dashed var(--border-color);
+    }
+
+    .batch-name-edit-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      max-height: 210px;
+      overflow-y: auto;
+      margin-top: 6px;
+      padding-right: 2px;
+    }
+
+    .batch-name-edit-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--bg-input);
+      padding: 6px 8px;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+    }
+
+    .batch-range-tag {
+      font-size: 0.73rem;
+      font-weight: 800;
+      color: var(--six-eyes);
+      white-space: nowrap;
+      min-width: 120px;
+    }
+
+    .batch-name-input {
+      padding: 6px 9px !important;
+      font-size: 0.81rem !important;
+      border-radius: 6px !important;
+      flex: 1;
+    }
+
+    .text-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    .text-header-row label { margin: 0; }
+
+    .char-badge {
+      font-size: 0.73rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: rgba(255, 213, 51, 0.14);
+      color: var(--six-eyes);
+      border: 1px solid rgba(255, 213, 51, 0.3);
+    }
+
+    #pastedText {
+      height: 145px;
+      font-family: inherit;
+      font-size: 0.9rem;
+      resize: vertical;
+      white-space: pre-wrap;
+    }
+
+    .mini-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .btn-mini {
+      padding: 9px 10px;
+      font-size: 0.78rem;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      background: var(--bg-input);
+      color: var(--text-main);
+      font-weight: 700;
+      cursor: pointer;
+      flex: 1;
+      text-align: center;
+      transition: border-color 0.2s, transform 0.1s;
+    }
+
+    .btn-mini:active { transform: scale(0.98); }
+    .btn-mini:hover { border-color: var(--six-eyes); }
+
+    .file-hint {
+      font-size: 0.76rem;
+      color: var(--text-muted);
+      margin-top: 5px;
+      line-height: 1.38;
+    }
+
+    /* PROJECT & BATCH QUOTA ESTIMATOR */
+    .planner-card {
+      margin-top: 14px;
+      padding: 13px;
+      border-radius: 12px;
+      background: linear-gradient(145deg, rgba(5, 52, 68, 0.92), rgba(70, 30, 58, 0.85));
+      border: 1px solid rgba(192, 132, 252, 0.4);
+      box-shadow: 0 4px 16px rgba(255, 105, 150, 0.15);
+    }
+
+    body.light-theme .planner-card {
+      background: linear-gradient(145deg, #fff8d6, #d9f3ff);
+      border-color: #ff9ebb;
+    }
+
+    .planner-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+
+    .planner-title {
+      font-size: 0.88rem;
+      font-weight: 800;
+      color: var(--six-eyes);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 7px;
+      margin-bottom: 10px;
+    }
+
+    @media (max-width: 520px) {
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    .stat-box {
+      background: var(--bg-input);
+      border: 1px solid var(--border-color);
+      border-radius: 9px;
+      padding: 8px 6px;
+      text-align: center;
+    }
+
+    .stat-val {
+      font-size: 0.92rem;
+      font-weight: 800;
+      color: var(--text-main);
+    }
+
+    .stat-lbl {
+      font-size: 0.67rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+      font-weight: 600;
+    }
+
+    .schedule-box {
+      background: var(--bg-input);
+      border: 1px solid var(--border-color);
+      border-radius: 9px;
+      padding: 10px 11px;
+      font-size: 0.8rem;
+      line-height: 1.48;
+      color: var(--text-main);
+    }
+
+    .day-item {
+      padding: 6px 0;
+      border-bottom: 1px dashed rgba(148, 163, 184, 0.2);
+    }
+
+    .day-item:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+
+    .day-badge {
+      display: inline-block;
+      padding: 2px 7px;
+      border-radius: 6px;
+      font-size: 0.72rem;
+      font-weight: 800;
+      margin-right: 6px;
+    }
+
+    .day-today {
+      background: rgba(16, 185, 129, 0.2);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.4);
+    }
+
+    body.light-theme .day-today { color: #047857; }
+
+    /* GENERATED BATCH FILES LIST */
+    #batchFilesPanel {
+      display: none;
+      margin-top: 14px;
+      padding: 12px;
+      background: var(--bg-box);
+      border: 1px solid var(--border-color);
+      border-radius: 11px;
+    }
+
+    .batch-panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      gap: 8px;
+    }
+
+    .batch-panel-title {
+      font-size: 0.85rem;
+      font-weight: 800;
+      color: var(--text-main);
+    }
+
+    .batch-list {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      max-height: 290px;
+      overflow-y: auto;
+      padding-right: 2px;
+    }
+
+    .batch-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      background: var(--bg-input);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      font-size: 0.8rem;
+      flex-wrap: wrap;
+    }
+
+    .batch-row.done {
+      border-color: rgba(16, 185, 129, 0.5);
+    }
+
+    .batch-row.active-run {
+      border-color: var(--six-eyes);
+      box-shadow: 0 0 10px rgba(255, 213, 51, 0.2);
+    }
+
+    .batch-row.local-fallback {
+      border-color: rgba(245, 158, 11, 0.65);
+    }
+
+    .batch-info {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      flex: 1;
+      min-width: 180px;
+    }
+
+    .batch-name {
+      font-weight: 700;
+      color: var(--text-main);
+      word-break: break-word;
+    }
+
+    .batch-inline-rename {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: 2px;
+    }
+
+    .batch-inline-rename input {
+      padding: 4px 7px;
+      font-size: 0.76rem;
+      border-radius: 5px;
+      height: 28px;
+    }
+
+    .batch-actions {
+      display: flex;
+      gap: 5px;
+      flex-shrink: 0;
+    }
+
+    .btn-batch-dl {
+      padding: 6px 10px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      border-radius: 6px;
+      border: none;
+      background: #16a34a;
+      color: #fff;
+      cursor: pointer;
+    }
+
+    .btn-batch-share {
+      padding: 6px 9px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      border-radius: 6px;
+      border: none;
+      background: #0e9fb3;
+      color: #fff;
+      cursor: pointer;
+    }
+
+    /* PAUSE / CONTINUE BANNER */
+    #continueBanner {
+      display: none;
+      margin-top: 14px;
+      padding: 12px;
+      border-radius: 10px;
+      background: rgba(245, 158, 11, 0.14);
+      border: 1.5px solid var(--amber-warn);
+      color: var(--text-main);
+      font-size: 0.81rem;
+      line-height: 1.45;
+    }
+
+    details {
+      margin-top: 14px;
+      background: var(--bg-box);
+      border: 1px solid var(--border-color);
+      border-radius: 9px;
+      padding: 10px 12px;
+    }
+
+    summary {
+      font-weight: 700;
+      font-size: 0.85rem;
+      color: var(--text-main);
+      cursor: pointer;
+    }
+
+    #customRules {
+      height: 75px;
+      margin-top: 8px;
+      font-size: 0.84rem;
+    }
+
+    .diag-log-box {
+      margin-top: 8px;
+      max-height: 150px;
+      overflow-y: auto;
+      background: var(--bg-input);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 8px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      white-space: pre-wrap;
+      line-height: 1.38;
+    }
+
+    .progress-wrap {
+      display: none;
+      margin-top: 14px;
+      background: var(--bg-input);
+      border: 1px solid var(--border-color);
+      border-radius: 999px;
+      height: 11px;
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--six-eyes), var(--lapse-blue), var(--hollow-purple), var(--reversal-red));
+      box-shadow: 0 0 12px rgba(255, 213, 51, 0.7);
+      transition: width 0.3s ease;
+    }
+
+    .btn-col {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    button.action-btn {
+      width: 100%;
+      padding: 13px;
+      border: none;
+      border-radius: 10px;
+      font-weight: 800;
+      cursor: pointer;
+      font-size: 0.95rem;
+      letter-spacing: 0.3px;
+      transition: transform 0.12s ease, opacity 0.2s ease;
+    }
+
+    button.action-btn:active { transform: scale(0.99); }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #ffd51f, #ffb000, #ff8a00);
+      color: #3a2100;
+      box-shadow: 0 4px 16px rgba(255, 176, 0, 0.45);
+      border: 1px solid rgba(255, 255, 255, 0.55);
+    }
+
+    .btn-primary:disabled {
+      background: #334155;
+      color: #94a3b8;
+      box-shadow: none;
+      border-color: transparent;
+      cursor: not-allowed;
+    }
+
+    .btn-next-quiz {
+      background: linear-gradient(135deg, #0d9488, #0e9fb3);
+      color: #ffffff;
+      border: 1px solid rgba(255, 213, 51, 0.45);
+      box-shadow: 0 4px 14px rgba(2, 132, 199, 0.3);
+      display: none;
+    }
+
+    .btn-continue {
+      background: linear-gradient(135deg, #f59e0b, #ea580c, #e11d48);
+      color: #ffffff;
+      box-shadow: 0 4px 16px rgba(245, 158, 11, 0.4);
+      border: 1px solid rgba(251, 191, 36, 0.5);
+      display: none;
+    }
+
+    .btn-stop {
+      background: linear-gradient(135deg, #e11d48, #be123c);
+      color: white;
+      display: none;
+    }
+
+    .btn-share {
+      background: linear-gradient(135deg, #0e9fb3, #0b7a8c);
+      color: white;
+      display: none;
+    }
+
+    .btn-success {
+      background: linear-gradient(135deg, #16a34a, #15803d);
+      color: white;
+      display: none;
+    }
+
+    .btn-copy {
+      background: linear-gradient(135deg, #c2417a, #8f2a5b);
+      color: white;
+      display: none;
+    }
+
+    #status {
+      margin-top: 12px;
+      font-size: 0.86rem;
+      color: var(--six-eyes);
+      font-weight: 700;
+      text-align: center;
+      word-break: break-word;
+    }
+
+    #output {
+      width: 100%;
+      height: 330px;
+      margin-top: 14px;
+      padding: 12px;
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.84rem;
+      white-space: pre;
+      resize: vertical;
+      background: var(--bg-input);
+      color: var(--text-main);
+    }
+
+    .checkbox-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 8px;
+      font-size: 0.8rem;
+      color: var(--text-main);
+      font-weight: 600;
+    }
+
+    .checkbox-row input[type="checkbox"] {
+      width: 17px;
+      height: 17px;
+      margin: 0;
+      accent-color: var(--six-eyes);
+    }
+
+    /* ---------- Playful decorations ---------- */
+    .bubbles { position: fixed; inset: 0; overflow: hidden; pointer-events: none; z-index: 0; }
+    .bubbles span {
+      position: absolute; bottom: -50px; border-radius: 50%;
+      border: 1.5px solid rgba(255, 255, 255, 0.38);
+      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.40), rgba(255,255,255,0.04));
+      animation: bubbleRise linear infinite;
+    }
+    .bubbles span:nth-child(1) { left: 6%;  width: 18px; height: 18px; animation-duration: 14s; animation-delay: 0s; }
+    .bubbles span:nth-child(2) { left: 16%; width: 30px; height: 30px; animation-duration: 19s; animation-delay: 3s; }
+    .bubbles span:nth-child(3) { left: 29%; width: 14px; height: 14px; animation-duration: 12s; animation-delay: 6s; }
+    .bubbles span:nth-child(4) { left: 44%; width: 24px; height: 24px; animation-duration: 17s; animation-delay: 1s; }
+    .bubbles span:nth-child(5) { left: 58%; width: 36px; height: 36px; animation-duration: 22s; animation-delay: 5s; }
+    .bubbles span:nth-child(6) { left: 71%; width: 16px; height: 16px; animation-duration: 13s; animation-delay: 8s; }
+    .bubbles span:nth-child(7) { left: 83%; width: 26px; height: 26px; animation-duration: 18s; animation-delay: 2s; }
+    .bubbles span:nth-child(8) { left: 93%; width: 20px; height: 20px; animation-duration: 15s; animation-delay: 7s; }
+    @keyframes bubbleRise { to { transform: translateY(-115vh) translateX(20px); } }
+    body.light-theme .bubbles span { border-color: rgba(14, 159, 179, 0.45); background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.8), rgba(255,255,255,0.15)); }
+    body.light-theme .mode-card.book-card .mode-pill { color: #a3205a; background: rgba(214, 51, 108, 0.12); border-color: rgba(214, 51, 108, 0.35); }
+    body.light-theme .btn-primary { color: #3a2100; }
+    @media (prefers-reduced-motion: reduce) { .bubbles { display: none; } }
+
+    /* ---------- Patrick edition (pink star) ---------- */
+    body.patrick:not(.light-theme) {
+      --bg-main: #230a28;
+      --bg-image:
+        radial-gradient(circle at 15% 8%, rgba(255, 143, 193, 0.18) 0%, transparent 40%),
+        radial-gradient(circle at 88% 14%, rgba(89, 217, 142, 0.14) 0%, transparent 42%),
+        linear-gradient(180deg, #3a1040 0%, #230a28 60%, #1f1f0f 100%);
+      --bg-card: rgba(50, 16, 56, 0.94);
+      --bg-box: rgba(112, 40, 96, 0.55);
+      --bg-input: #2a0d30;
+      --text-main: #ffeaf4;
+      --text-muted: #e0a9c6;
+      --six-eyes: #ff8fc1;
+      --lapse-blue: #3fd08a;
+      --reversal-red: #ff5a7a;
+      --hollow-purple: #b05cff;
+      --border-color: rgba(255, 143, 193, 0.34);
+      --card-glow: 0 0 28px rgba(255, 143, 193, 0.16), 0 0 55px rgba(176, 92, 255, 0.14);
+    }
+    body.patrick.light-theme {
+      --bg-main: #ffe3f0;
+      --bg-image: linear-gradient(180deg, #ffd3e8 0%, #ffeaf4 55%, #e3ffe9 100%);
+      --bg-card: #fffafd;
+      --bg-box: #ffd6ea;
+      --bg-input: #ffffff;
+      --text-main: #4a1634;
+      --text-muted: #8a4a69;
+      --six-eyes: #c2185b;
+      --lapse-blue: #22a766;
+      --reversal-red: #d6304f;
+      --hollow-purple: #a43bd6;
+      --border-color: #ff9ecb;
+      --card-glow: 0 8px 24px rgba(194, 24, 91, 0.18);
+    }
+    body.patrick .btn-primary {
+      background: linear-gradient(135deg, #ffb3d6, #ff8fc1, #ff5fa2);
+      color: #3a0720;
+      box-shadow: 0 4px 16px rgba(255, 95, 162, 0.45);
+    }
+    body.patrick .infinity-emblem { background: #ff9ecb; border-color: #d6336c; }
+    body.patrick .bubbles span {
+      border: none; border-radius: 0;
+      background: rgba(255, 143, 193, 0.55);
+      clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+      animation-name: starRise;
+    }
+    body.patrick.light-theme .bubbles span { background: rgba(255, 95, 162, 0.45); }
+    @keyframes starRise { to { transform: translateY(-115vh) rotate(360deg); } }
+
+    /* BACKGROUND MUSIC BAR */
+    .music-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 8px 11px;
+      margin-bottom: 12px;
+      border-radius: 11px;
+      background: var(--bg-box);
+      border: 1px solid var(--border-color);
+      flex-wrap: wrap;
+    }
+    .music-info-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 150px;
+      flex: 1;
+    }
+    .music-track-name {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--text-main);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 240px;
+    }
+    .music-controls-wrap {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .music-mini-btn {
+      padding: 5px 9px;
+      border-radius: 7px;
+      border: 1px solid var(--border-color);
+      background: var(--bg-input);
+      color: var(--text-main);
+      font-size: 0.75rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .music-mini-btn:hover {
+      border-color: var(--six-eyes);
+    }
+    .music-vol-slider {
+      width: 68px;
+      padding: 0;
+      accent-color: var(--six-eyes);
+      cursor: pointer;
+    }
+
+  </style>
+</head>
+<body>
+<div class="bubbles" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+
+<!-- UNIVERSAL APK PASTE MODAL -->
+<div class="paste-modal-backdrop" id="apkPasteModal">
+  <div class="paste-modal-card">
+    <div class="paste-modal-title" id="apkPasteModalTitle">📋 Quick Paste Box (APK Safe)</div>
+    <div class="paste-modal-sub" id="apkPasteModalSub">
+      Long-press inside the box below and tap <b>Paste</b> (or tap 📋 on your keyboard bar) — it will be added automatically!
+    </div>
+    <textarea class="paste-modal-textarea" id="apkPasteModalInput" placeholder="Long-press here and tap Paste..." oninput="onApkModalInput()"></textarea>
+    <div class="paste-modal-actions">
+      <button type="button" class="btn-key-save" style="flex:1;" onclick="confirmApkModalPaste()">✅ Confirm &amp; Insert</button>
+      <button type="button" class="btn-key-util" style="flex:0.6;" onclick="closeApkPasteModal()">✕ Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="header-row">
+    <div class="brand-wrap">
+      <div class="infinity-emblem" title="Edition">🧽</div>
+      <div>
+        <h1>Strict MCQ Extractor</h1>
+        <div class="subtitle">SPONGEBOB &amp; PATRICK EDITION • ZERO-CUTOFF + 1-TAP PASTE (v34 PWA)</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end;">
+      <button type="button" class="theme-btn" id="pwaInstallBtn" onclick="triggerPwaInstall()" style="display:none;background:linear-gradient(135deg,#10b981,#059669);color:#fff;border-color:rgba(16,185,129,0.6);">📲 Install</button>
+      <button type="button" class="theme-btn" id="editionBtn" onclick="toggleEdition()">⭐ Patrick</button>
+      <button type="button" class="theme-btn" id="themeBtn" onclick="toggleTheme()">☀️ Light</button>
+    </div>
+  </div>
+
+  <!-- BACKGROUND MUSIC PLAYER BAR (APK / WebView Safe) -->
+  <div class="music-bar" id="bgMusicBar">
+    <div class="music-info-wrap">
+      <span>🎵</span>
+      <span class="music-track-name" id="bgMusicTrackLabel">No background music loaded</span>
+    </div>
+    <div class="music-controls-wrap">
+      <button type="button" class="music-mini-btn" id="bgMusicPlayBtn" onclick="toggleBgMusicPlay()" style="display:none;">▶️ Play</button>
+      <label for="bgMusicVol" style="display:none;">Volume</label>
+      <input type="range" id="bgMusicVol" class="music-vol-slider" min="0" max="1" step="0.05" value="0.35" oninput="setBgMusicVolume(this.value)" title="Music Volume" />
+      <label for="bgMusicFileInput" class="music-mini-btn" style="margin:0;cursor:pointer;">📁 Upload Audio</label>
+      <input type="file" id="bgMusicFileInput" accept="audio/*,.mp3,.m4a,.ogg,.wav,.aac,.flac,.opus" style="display:none;" onchange="handleBgMusicUpload(this)" />
+      <button type="button" class="music-mini-btn" id="bgMusicClearBtn" onclick="clearBgMusic()" style="display:none;color:#fb7185;">✕</button>
+    </div>
+  </div>
+
+  <!-- CRASH / INTERRUPTED SESSION RECOVERY BANNER -->
+  <div class="recovery-banner" id="recoveryBanner">
+    <div id="recoveryBannerText">♻️ Previous extracted MCQs were auto-saved before the app closed.</div>
+    <div class="recovery-actions">
+      <button type="button" class="btn-key-save" style="flex:1;" onclick="restoreSavedOutput()">♻️ Restore Saved MCQs</button>
+      <button type="button" class="btn-key-util" style="flex:0.5;" onclick="dismissSavedOutput()">✕ Dismiss</button>
+    </div>
+  </div>
+
+  <!-- STEP 0: OPENING MODE SELECTION SCREEN -->
+  <div id="openingScreen">
+    <div class="opening-title">Choose Your Extraction Domain</div>
+    <div class="opening-sub">Select whether you are extracting a Quiz (≤ 50 MCQs) or a full Medical Book / Q-Bank</div>
+
+    <div class="opening-grid">
+      <div class="mode-card quiz-card" onclick="enterWorkspace('quiz')">
+        <span class="mode-icon">⚡</span>
+        <h2>Extract a Quiz</h2>
+        <p>Engineered for every Android phone &amp; WebToApk WebView. Auto-compresses images, prevents token cutoffs, auto-waits on rate limits &amp; resumes without restarting.</p>
+        <span class="mode-pill">Zero-Cutoff • Anti-Hang • Auto-Resume</span>
+      </div>
+
+      <div class="mode-card book-card" onclick="enterWorkspace('book')">
+        <span class="mode-icon">📚</span>
+        <h2>Extract a Book</h2>
+        <p>Full Q-Bank &amp; textbook engine. Choose <b>General</b> (up to 1,000 Qs) or <b>Splitted</b> (custom page ranges → separate named .txt files) with Smart Rate-Limit Pacing.</p>
+        <span class="mode-pill">65K Output Cap • Auto-Split • Crash Recovery</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN WORKSPACE -->
+  <div id="mainWorkspace" style="display: none;">
+
+    <div class="top-mode-bar">
+      <button type="button" class="top-mode-btn active-quiz" id="topBtnQuiz" onclick="enterWorkspace('quiz')">⚡ Quiz Mode (Zero-Miss)</button>
+      <button type="button" class="top-mode-btn" id="topBtnBook" onclick="enterWorkspace('book')">📚 Book Mode</button>
+    </div>
+
+    <div class="key-vault-box">
+      <div class="key-vault-header">
+        <label for="newKeyInput">1. Gemini API Key Vault &amp; True Battery</label>
+        <span class="key-count-badge" id="keyCountBadge">🔑 0 Keys Saved</span>
+      </div>
+
+      <div class="quota-reset-banner">
+        <span id="totalVaultHealthText">🔋 Total Capacity: <b>100%</b> (0 / 0 batches left today)</span>
+        <span id="dailyResetCountdownText">⏰ Daily Reset: Calculating...</span>
+      </div>
+
+      <input type="hidden" id="apiKey" value="" />
+
+      <div class="key-add-row">
+        <input type="text" id="newKeyInput" placeholder="Paste any API key (AIzaSy... or multiple keys)" autocomplete="off" spellcheck="false" />
+        <button type="button" class="btn-key-add" onclick="addKeyFromInput()">➕ Add Key</button>
+      </div>
+
+      <div class="key-vault-actions">
+        <button type="button" class="btn-key-save" onclick="saveKeysToAppVault(true)">💾 Save API Keys to App</button>
+        <button type="button" class="btn-key-util" id="toggleShowKeysBtn" onclick="toggleShowSavedKeys()">👁️ Show Full Keys</button>
+        <button type="button" class="btn-key-util" onclick="pasteKeyFromClipboard()">📋 Paste Key</button>
+      </div>
+
+      <div class="key-save-toast" id="keySaveToast"></div>
+
+      <div class="saved-keys-list" id="savedKeysList"></div>
+
+      <div class="mini-row" style="margin-top:8px;">
+        <button type="button" class="btn-mini" onclick="testAllSavedKeysLive()">🩺 Test Keys Live</button>
+        <button type="button" class="btn-mini" onclick="resetAllKeyQuotasTo100()">🔄 Reset Keys to 100%</button>
+        <button type="button" class="btn-mini" style="flex:0.6;color:#fb7185;" onclick="clearAllKeysVault()">🗑️ Clear</button>
+      </div>
+
+      <div class="file-hint" id="apiKeyHint" style="margin-top: 7px;">
+        💡 <b>Universal Stability (v27):</b> Automatically disables hidden thinking-token waste, waits out short Google RPM limits cleanly instead of stopping early, compresses phone screenshots for low-RAM devices, and saves every batch live so no question is lost.
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div>
+        <label for="modelName">2. Primary Model (Auto-Fallbacks Ready)</label>
+        <input type="text" id="modelName" list="modelPresets" value="gemini-2.5-flash" style="padding: 9px 10px; font-size: 0.84rem;" />
+        <datalist id="modelPresets">
+          <option value="gemini-2.5-flash"></option>
+          <option value="gemini-3.5-flash-lite"></option>
+          <option value="gemini-2.5-flash-lite"></option>
+          <option value="gemini-3.1-flash-lite"></option>
+          <option value="gemini-3.8-flash"></option>
+          <option value="gemini-3-flash-preview"></option>
+        </datalist>
+      </div>
+      <div>
+        <label for="paceMode">Extraction Engine Mode</label>
+        <select id="paceMode" style="padding: 9px 10px; font-size: 0.82rem;" onchange="updateProjectConsumptionPlanner()">
+          <option value="hybrid" selected>🚀 Auto-Hybrid (Smart AI Retry + Local Fallback)</option>
+          <option value="autorotate">☁️ Strict Cloud AI Only (Smart Cooldown &amp; Retry)</option>
+          <option value="localonly">⚡ Instant Local Engine (0% Key Used — Digital PDF/Text)</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- BOOK MODE SUB-OPTIONS -->
+    <div id="bookTypeSection" style="display: none;">
+      <label>3. Choose Book Extraction Mode</label>
+      <div class="tabs cols-2">
+        <button type="button" class="tab-btn active" id="tabBookGeneral" onclick="setBookSubMode('general')">📖 General (PDF / Text ≤ 1000 Qs)</button>
+        <button type="button" class="tab-btn" id="tabBookSplitted" onclick="setBookSubMode('splitted')">✂️ Splitted (Custom Ranges → .txt Files)</button>
+      </div>
+    </div>
+
+    <!-- INPUT SOURCE TABS -->
+    <div id="sourceTabsWrapper">
+      <label id="sourceTabsLabel">3. Choose Input Source</label>
+      <div class="tabs" id="sourceTabsGrid">
+        <button type="button" class="tab-btn active" id="tabPdf" onclick="setSourceMode('pdf')">PDF</button>
+        <button type="button" class="tab-btn" id="tabImg" onclick="setSourceMode('img')">Images</button>
+        <button type="button" class="tab-btn" id="tabText" onclick="setSourceMode('text')">Paste Text</button>
+        <button type="button" class="tab-btn" id="tabAll" onclick="setSourceMode('all')">Combine All</button>
+      </div>
+    </div>
+
+    <!-- PDF INPUT BOX -->
+    <div id="pdfSection" class="input-box">
+      <label for="pdfFile" id="pdfBoxLabel">Select MCQ PDF</label>
+      <input type="file" id="pdfFile" accept="application/pdf,.pdf" onchange="inspectPdfPages()" />
+      <div class="file-hint" id="pdfPageInfo">PDFs are decoded with coordinate-sorted digital text + auto-sized vision batches (max 2 scanned pages/call) and WebView RAM cleanup.</div>
+
+      <!-- SPLITTED BOOK RANGES INPUT -->
+      <div id="splittedRangesBox" style="display: none; margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--border-color);">
+        <label for="customRangesInput" style="margin-top: 0;">Enter Page Ranges (Each Range = 1 Separate .txt File)</label>
+        <input type="text" id="customRangesInput" placeholder="e.g. 3-7, 8-12, 13-15 (or Sensory Receptor: 3-7, Pain sensation: 8-12)" oninput="onRangesInputChanged()" />
+        <div class="file-hint">
+          Tip: Type ranges like <code>3-7, 8-12, 13-15</code> (or name them inline like <code>Sensory Receptor: 3-7, Pain sensation: 8-12</code>).
+        </div>
+        <div class="checkbox-row">
+          <input type="checkbox" id="autoDownloadRanges" checked />
+          <label for="autoDownloadRanges" style="margin: 0; font-size: 0.79rem; cursor: pointer;">Automatically download each range's named .txt file as soon as it finishes</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- IMAGES INPUT BOX -->
+    <div id="imgSection" class="input-box" style="display: none;">
+      <label for="imgFiles">Select MCQ Images / Screenshots</label>
+      <input type="file" id="imgFiles" accept="image/*" multiple onchange="updateImageCount()" />
+      <div class="file-hint" id="imgCountHint">Select one or multiple screenshots at once (auto-compressed for fast upload &amp; low-RAM phones, 2 images per batch).</div>
+    </div>
+
+    <!-- PASTE TEXT INPUT BOX -->
+    <div id="textSection" class="input-box" style="display: none;">
+      <div class="text-header-row">
+        <label for="pastedText" id="pastedTextLabel">Paste Raw MCQs or Text</label>
+        <span class="char-badge" id="charBadge">0 chars</span>
+      </div>
+
+      <textarea id="pastedText" placeholder="Paste your questions, choices, and answer keys here..." oninput="updateTextStats(); if (autoExtractAfterNextPaste) handleAnyPastedTextEvent();" onpaste="onSourceTextPasted()"></textarea>
+      <div class="file-hint" id="bookTextLimitHint" style="display: none; color: var(--lapse-blue);">
+        📖 General Book Mode: Supports up to <b>1,000 questions maximum</b> per book extraction.
+      </div>
+
+      <div class="mini-row">
+        <button type="button" class="btn-mini" id="pasteBtn" onclick="pasteFromClipboard()">📋 Paste from Clipboard</button>
+        <button type="button" class="btn-mini" onclick="clearPastedText()">🗑️ Clear Text</button>
+      </div>
+    </div>
+
+    <!-- FILE NAMING SECTION -->
+    <div class="naming-box" id="fileNamingBox">
+      <label for="mainCustomFileName">
+        <span id="mainFileNameLabel">🏷️ Name Your Quiz .txt File</span>
+        <span style="font-size: 0.72rem; color: var(--text-muted); font-weight: 600;">Editable before &amp; after extraction</span>
+      </label>
+      <div class="naming-input-wrap">
+        <input type="text" id="mainCustomFileName" placeholder="e.g. Pathology_Quiz_1 (Leave blank for auto-name)" oninput="onMainFileNameEdited()" />
+        <span class="naming-suffix">.txt</span>
+      </div>
+
+      <!-- PER-BATCH FILE NAME EDITOR -->
+      <div id="customBatchNamesEditor">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <span style="font-size: 0.8rem; font-weight: 800; color: var(--six-eyes);">📝 Name Each Batch .txt File &amp; See Key % Used</span>
+          <span style="font-size: 0.71rem; color: var(--text-muted);">Type custom names for any batch below</span>
+        </div>
+        <div class="batch-name-edit-list" id="batchNameEditList"></div>
+      </div>
+    </div>
+
+    <!-- PROJECT QUOTA, KEY % CONSUMPTION & TIME PLANNER -->
+    <div id="bookPlannerPanel" class="planner-card">
+      <div class="planner-header">
+        <div class="planner-title">🍍 Project Quota, Key % &amp; Time Estimator</div>
+        <select id="keyDailyCapSelect" style="width: auto; padding: 4px 8px; font-size: 0.73rem;" onchange="onDailyCapChanged()" title="Daily requests per API key">
+          <option value="20">20 req/day per Key (1 req = 5% of 1 Key)</option>
+          <option value="40" selected>40 req/day per Key (1 req = 2.5% of 1 Key)</option>
+          <option value="75">75 req/day per Key (1 req = 1.3% of 1 Key)</option>
+        </select>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-box">
+          <div class="stat-val" id="statProjectConsume">0% of 1 Key</div>
+          <div class="stat-lbl" id="statProjectConsumeSub">Project Key Consumption</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-val" id="statEstTime">~0s</div>
+          <div class="stat-lbl" id="statTimeSub">Time to Extract Project</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-val" id="statVaultRemaining">100% Left</div>
+          <div class="stat-lbl" id="statVaultRemainingSub">Current Keys Left Today</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-val" id="statTotalBatches">0 Batches</div>
+          <div class="stat-lbl" id="statBatchesSub">0 API Requests</div>
+        </div>
+      </div>
+
+      <div class="schedule-box" id="scheduleBreakdown">
+        Select a PDF, images, or paste text above to see exact key % consumption and extraction time.
+      </div>
+    </div>
+
+    <!-- PAUSE / CONTINUE BANNER -->
+    <div id="continueBanner"></div>
+
+    <!-- QUALITY / COMPLETENESS AUDIT BANNER -->
+    <div id="auditBanner" class="audit-banner"></div>
+
+    <!-- BATCH FILES PANEL (Works in BOTH Quiz & Book Modes for Resumability & Re-Do!) -->
+    <div id="batchFilesPanel">
+      <div class="batch-panel-header">
+        <span class="batch-panel-title" id="batchPanelTitle">📂 Extraction Batches (Live Progress &amp; 1-Tap Re-Do)</span>
+        <button type="button" class="btn-batch-dl" id="downloadAllBatchesBtn" style="display: none;" onclick="downloadAllCompletedBatches()">⬇️ Download All Finished</button>
+      </div>
+      <div class="batch-list" id="batchListContainer"></div>
+    </div>
+
+    <details>
+      <summary>Extra Formatting, Reliability &amp; Diagnostics (Optional)</summary>
+      <label for="noKeyMode" style="margin-top: 10px;">When a question has no answer key in the source</label>
+      <select id="noKeyMode" style="padding: 9px 10px; font-size: 0.84rem;">
+        <option value="solve" selected>Let AI pick the best answer (no more “Uncertain”)</option>
+        <option value="uncertain">Write “Answer: Uncertain” instead</option>
+      </select>
+      <label for="customRules" style="margin-top: 10px;">Custom Extraction Rules</label>
+      <textarea id="customRules" placeholder="Optional: e.g., Remove question numbers, or only extract questions about cranial nerves... (Leave blank for default Strict Mode)"></textarea>
+      <label style="margin-top: 10px;">Live Engine Log (Helpful if any colleague hits an error)</label>
+      <div class="diag-log-box" id="diagLogBox">Engine initialized (v27 Universal). Waiting for extraction...</div>
+    </details>
+
+    <div class="progress-wrap" id="progressWrap">
+      <div class="progress-bar" id="progressBar"></div>
+    </div>
+    <div id="status">Ready to flip some Krabby Patties ✓</div>
+
+    <div class="consumption-live-box" id="liveConsumptionBar">
+      <span id="liveKeyActiveLabel">🔑 Active Engine: Ready</span>
+      <span id="liveProjectProgressLabel">📊 Consumed: 0% of 1 Key (0 / 0 reqs)</span>
+    </div>
+
+    <div class="btn-col">
+      <button type="button" class="action-btn btn-continue" id="continueBtn" onclick="continueActiveExtraction()">⚡ Continue / Resume Remaining Batches (No Restart Needed)</button>
+      <button type="button" class="action-btn btn-primary" id="extractBtn" onclick="processExtraction()">🍔 Krabby Patty: Extract MCQs Now</button>
+      <button type="button" class="action-btn btn-next-quiz" id="nextQuizResetBtn" onclick="resetForNextSuccessiveQuiz()">🔄 Prepare Next Quiz (Instant Memory Reset — No App Restart Needed)</button>
+      <button type="button" class="action-btn btn-stop" id="stopBtn" onclick="stopExtraction()">⏹️ Stop / Pause (Keep Extracted Batches So Far)</button>
+      <button type="button" class="action-btn btn-share" id="shareBtn" onclick="shareTxtFile()">📤 Send .txt File (Telegram / Phone)</button>
+      <button type="button" class="action-btn btn-success" id="downloadBtn" onclick="downloadTxt()">⬇️ Download .txt File</button>
+      <button type="button" class="action-btn btn-copy" id="copyBtn" onclick="copyText()">📋 Copy Extracted Text</button>
+    </div>
+
+    <textarea id="output" placeholder="Extracted MCQs will appear here live..." readonly></textarea>
+  </div>
+</div>
+
+<script>
+  if (typeof pdfjsLib !== 'undefined') {
+    pdfjsLib.GlobalWorkerOptions.workerSrc = window.__pdfJsWorkerUrls[0];
+  }
+
+  // ---------------- GLOBAL STATE ----------------
+  let appCategory = 'quiz'; // 'quiz' or 'book'
+  let bookSubMode = 'general'; // 'general' or 'splitted'
+  let currentMode = 'pdf'; // 'pdf', 'img', 'text', 'all'
+  let stopRequested = false;
+  let activeFetchController = null;
+  let wakeLockSentinel = null;
+  let keyRotationIndex = 0;
+
+  let loadedPdfDoc = null;
+  let loadedPdfTotalPages = 0;
+  let loadedPdfName = 'book';
+  let loadedPdfFileSignature = '';
+
+  let lastQuizCompletedFlag = false;
+  let userCustomBatchNames = {};
+  let currentPasteTarget = 'key';
+  let sessionRequestsDone = 0;
+  let sessionRequestsPlanned = 0;
+
+  // Unified resumable session state for BOTH Quiz Mode and Book Mode!
+  let extractionSession = {
+    active: false,
+    category: 'quiz',
+    tasks: [],
+    globalKeyMap: {},
+    systemPrompt: '',
+    customRules: ''
+  };
+
+  // Current live Gemini API Flash models (Nov 2026) — deprecated 1.5/2.0 removed!
+  const ACTIVE_MODEL_CHAIN = [
+    'gemini-2.5-flash',
+    'gemini-3.5-flash-lite',
+    'gemini-2.5-flash-lite',
+    'gemini-3.1-flash-lite',
+    'gemini-3.8-flash',
+    'gemini-3-flash-preview'
+  ];
+
+  // Safe per-model RPM pacing (minimum ms between consecutive calls on the SAME key+model slot)
+  const MODEL_MIN_GAP_MS = {
+    'gemini-2.5-flash': 6500,
+    'gemini-3.5-flash-lite': 4500,
+    'gemini-2.5-flash-lite': 4200,
+    'gemini-3.1-flash-lite': 4200,
+    'gemini-3.8-flash': 6500,
+    'gemini-3-flash-preview': 8000
+  };
+
+  let slotCooldownUntil = {};   // key::model -> timestamp ms (temporary 429/503 cooldown)
+  let slotExhaustedToday = {};  // key::model -> true (hard daily RPD limit reached)
+  let slotLastCallTs = {};      // key::model -> timestamp ms (for smooth RPM spacing)
+  let invalidKeys = {};         // key -> true (HTTP 401/403/API_KEY_INVALID)
+  let unavailableModels = {};   // model -> true (HTTP 404 model not found)
+  let noThinkingModels = {};    // model -> true (model rejects thinkingConfig)
+  let keyLastDiagNote = {};     // key -> diagnostic string
+
+  const apiKeyInput = document.getElementById('apiKey');
+  let savedApiKeysArray = [];
+  let showFullKeysInVault = false;
+
+  const PLAIN_VAULT_STORAGE_KEY = 'spongebob_api_keys_vault_v27';
+  const AUTOSAVE_OUTPUT_KEY = 'spongebob_autosave_output_v27';
+  const DAILY_USAGE_KEY = 'mcq_daily_key_usage_v27';
+
+  // ---------------- DIAGNOSTIC LOGGER ----------------
+  const diagLines = [];
+  function logDiag(msg) {
+    const now = new Date();
+    const ts = now.toTimeString().slice(0, 8);
+    diagLines.push('[' + ts + '] ' + msg);
+    if (diagLines.length > 80) diagLines.shift();
+    const box = document.getElementById('diagLogBox');
+    if (box) {
+      box.textContent = diagLines.join('\n');
+      box.scrollTop = box.scrollHeight;
+    }
+  }
+
+  // ---------------- WAKE LOCK (Prevents Android Phones From Sleeping Mid-Extraction) ----------------
+  async function acquireWakeLock() {
+    try {
+      if ('wakeLock' in navigator && navigator.wakeLock && typeof navigator.wakeLock.request === 'function') {
+        wakeLockSentinel = await navigator.wakeLock.request('screen');
+        logDiag('Screen Wake Lock active (phone stays awake during extraction).');
+      }
+    } catch (e) {
+      // Silently ignore on unsupported WebViews
+    }
+  }
+
+  async function releaseWakeLock() {
+    try {
+      if (wakeLockSentinel) {
+        await wakeLockSentinel.release();
+        wakeLockSentinel = null;
+      }
+    } catch (e) {}
+  }
+
+  document.addEventListener('visibilitychange', function() {
+    if (document.visibilityState === 'visible' && document.getElementById('stopBtn').style.display === 'block') {
+      acquireWakeLock();
+    }
+  });
+
+  // ---------------- CRASH / INTERRUPT AUTO-SAVE RECOVERY ----------------
+  function persistOutputSnapshot(fileName, textContent, doneBatches, totalBatches) {
+    try {
+      if (!textContent || textContent.trim().length < 20) return;
+      const payload = {
+        ts: Date.now(),
+        fileName: fileName || 'extracted_mcqs.txt',
+        doneBatches: doneBatches || 0,
+        totalBatches: totalBatches || 0,
+        qCount: (textContent.match(/^Q:\s+/gm) || []).length,
+        text: textContent.slice(0, 450000) // Safe localStorage limit (~450KB)
+      };
+      localStorage.setItem(AUTOSAVE_OUTPUT_KEY, JSON.stringify(payload));
+    } catch (e) {
+      // Storage quota full — ignore gracefully
+    }
+  }
+
+  function checkForSavedOutputRecovery() {
+    try {
+      const raw = localStorage.getItem(AUTOSAVE_OUTPUT_KEY);
+      if (!raw) return;
+      const snap = JSON.parse(raw);
+      if (!snap || !snap.text || snap.text.trim().length < 20) return;
+      const ageHrs = (Date.now() - (snap.ts || 0)) / 3600000;
+      if (ageHrs > 48) {
+        localStorage.removeItem(AUTOSAVE_OUTPUT_KEY);
+        return;
+      }
+      const banner = document.getElementById('recoveryBanner');
+      const txt = document.getElementById('recoveryBannerText');
+      if (banner && txt) {
+        txt.innerHTML = '♻️ <b>Auto-Saved Extraction Found:</b> <b>' + snap.qCount + ' MCQs</b> (' +
+          (snap.doneBatches || 1) + '/' + (snap.totalBatches || 1) + ' batches • <code>' +
+          (snap.fileName || 'extracted_mcqs.txt') + '</code>). Tap Restore to view, copy, or download!';
+        banner.style.display = 'block';
+      }
+    } catch (e) {}
+  }
+
+  function restoreSavedOutput() {
+    try {
+      const raw = localStorage.getItem(AUTOSAVE_OUTPUT_KEY);
+      if (!raw) return;
+      const snap = JSON.parse(raw);
+      if (!snap || !snap.text) return;
+      if (document.getElementById('mainWorkspace').style.display === 'none') {
+        enterWorkspace('quiz');
+      }
+      document.getElementById('output').value = snap.text;
+      if (snap.fileName) {
+        document.getElementById('mainCustomFileName').value = stripTxtExtension(snap.fileName);
+      }
+      showSaveButtons();
+      renderCompletenessAudit(snap.text);
+      document.getElementById('status').textContent = '♻️ Restored ' + snap.qCount + ' saved MCQs! Ready to download or copy ✓';
+      document.getElementById('recoveryBanner').style.display = 'none';
+      document.getElementById('output').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    } catch (e) {}
+  }
+
+  function dismissSavedOutput() {
+    try { localStorage.removeItem(AUTOSAVE_OUTPUT_KEY); } catch (e) {}
+    document.getElementById('recoveryBanner').style.display = 'none';
+  }
+
+  // ---------------- SLEEP WITH STOP-AWARENESS ----------------
+  function interruptibleSleep(ms) {
+    return new Promise(function(resolve) {
+      if (ms <= 0 || stopRequested) { resolve(); return; }
+      const step = 250;
+      let elapsed = 0;
+      const timer = setInterval(function() {
+        elapsed += step;
+        if (stopRequested || elapsed >= ms) {
+          clearInterval(timer);
+          resolve();
+        }
+      }, step);
+    });
+  }
+
+  // ---------------- DAILY RESET COUNTDOWN ----------------
+  function getMsUntilMidnightPacific() {
+    try {
+      const now = new Date();
+      const ptString = now.toLocaleString('en-US', { timeZone: 'America/Los_Angeles' });
+      const ptDate = new Date(ptString);
+      const nextMidnight = new Date(ptDate);
+      nextMidnight.setHours(24, 0, 0, 0);
+      return Math.max(1000, nextMidnight.getTime() - ptDate.getTime());
+    } catch (e) {
+      return 3600000 * 6;
+    }
+  }
+
+  function formatDurationCountdown(ms) {
+    const totalMins = Math.max(1, Math.floor(ms / 60000));
+    const hrs = Math.floor(totalMins / 60);
+    const mins = totalMins % 60;
+    return hrs + 'h ' + mins + 'm';
+  }
+
+  function formatSecondsHuman(totalSec) {
+    if (totalSec <= 0) return '~0s';
+    if (totalSec < 60) return '~' + Math.ceil(totalSec) + 's';
+    const mins = Math.floor(totalSec / 60);
+    const secs = Math.round(totalSec % 60);
+    if (mins < 60) {
+      return secs > 0 ? ('~' + mins + 'm ' + secs + 's') : ('~' + mins + ' min');
+    }
+    const hrs = Math.floor(mins / 60);
+    const remM = mins % 60;
+    return '~' + hrs + 'h ' + remM + 'm';
+  }
+
+  function updateResetClockBanner() {
+    const el = document.getElementById('dailyResetCountdownText');
+    if (!el) return;
+    const msLeft = getMsUntilMidnightPacific();
+    el.innerHTML = '⏰ Resets to 100% in: <b>' + formatDurationCountdown(msLeft) + '</b>';
+  }
+  setInterval(updateResetClockBanner, 30000);
+
+  // ---------------- KEY VAULT ----------------
+  function extractValidKeysFromString(rawStr) {
+    if (!rawStr) return [];
+    const tokens = rawStr
+      .split(/[\s,;،\n]+/)
+      .map(k => k.trim())
+      .filter(k => k.length >= 16);
+    const unique = [];
+    for (const t of tokens) {
+      if (!unique.includes(t)) unique.push(t);
+    }
+    return unique;
+  }
+
+  function syncMasterKeyInput() {
+    apiKeyInput.value = savedApiKeysArray.join(', ');
+  }
+
+  function getDailyCapPerKey() {
+    const sel = document.getElementById('keyDailyCapSelect');
+    return (sel && parseInt(sel.value, 10)) || 40;
+  }
+
+  function getKeyShortId(key) {
+    return (key || '').trim().slice(-12);
+  }
+
+  function getKeyHealthStats(key) {
+    const cap = getDailyCapPerKey();
+    const data = getDailyKeyUsage();
+    const kId = getKeyShortId(key);
+    const used = Math.min(cap, data.counts[kId] || 0);
+    const remaining = Math.max(0, cap - used);
+    const pctLeft = Math.max(0, Math.min(100, Math.round(((remaining / cap) * 100) * 10) / 10));
+    const pctUsed = Math.round((100 - pctLeft) * 10) / 10;
+
+    return {
+      cap: cap,
+      used: used,
+      remaining: remaining,
+      pctLeft: pctLeft,
+      pctUsed: pctUsed,
+      diagNote: keyLastDiagNote[key] || ''
+    };
+  }
+
+  function getAllKeysAggregateHealth(keysList) {
+    const keys = keysList || savedApiKeysArray;
+    const capPerKey = getDailyCapPerKey();
+    if (!keys || keys.length === 0) {
+      return { totalCap: capPerKey, totalUsed: 0, totalRem: 0, avgPctLeft: 100, keysCount: 0 };
+    }
+    let totalCap = 0;
+    let totalUsed = 0;
+    let totalRem = 0;
+    for (const k of keys) {
+      const st = getKeyHealthStats(k);
+      totalCap += st.cap;
+      totalUsed += st.used;
+      totalRem += st.remaining;
+    }
+    const avgPctLeft = totalCap > 0 ? (Math.round(((totalRem / totalCap) * 100) * 10) / 10) : 100;
+    return { totalCap, totalUsed, totalRem, avgPctLeft, keysCount: keys.length };
+  }
+
+  function renderSavedKeysVault() {
+    syncMasterKeyInput();
+    updateResetClockBanner();
+
+    const listEl = document.getElementById('savedKeysList');
+    const badgeEl = document.getElementById('keyCountBadge');
+    const totalHealthEl = document.getElementById('totalVaultHealthText');
+    const count = savedApiKeysArray.length;
+    const agg = getAllKeysAggregateHealth(savedApiKeysArray);
+
+    if (badgeEl) {
+      badgeEl.textContent = count === 0
+        ? '🔑 0 Keys Saved'
+        : ('✅ ' + count + (count === 1 ? ' Key (' : ' Keys (') + agg.avgPctLeft + '% Left)');
+    }
+
+    if (totalHealthEl) {
+      if (count === 0) {
+        totalHealthEl.innerHTML = '🔋 Total Capacity: <b>0%</b> (Add a key below or use Instant Local Mode)';
+      } else {
+        totalHealthEl.innerHTML = '🔋 Total Keys Battery: <b>' + agg.avgPctLeft + '% Left</b> (<b>' + agg.totalRem + '</b> / ' + agg.totalCap + ' batches left today)';
+      }
+    }
+
+    if (!listEl) return;
+    listEl.innerHTML = '';
+
+    if (count === 0) {
+      listEl.innerHTML = '<div style="font-size: 0.77rem; color: var(--text-muted); text-align: center; padding: 6px 0;">No API keys saved yet. Tap <b>📋 Paste Key</b> or paste in the box above and tap <b>➕ Add Key</b>.</div>';
+      return;
+    }
+
+    const resetWaitStr = formatDurationCountdown(getMsUntilMidnightPacific());
+
+    for (let i = 0; i < count; i++) {
+      const k = savedApiKeysArray[i];
+      const st = getKeyHealthStats(k);
+      const masked = showFullKeysInVault
+        ? k
+        : (k.length > 14 ? (k.slice(0, 7) + '•••' + k.slice(-4)) : k);
+
+      let badgeClass = 'pct-high';
+      let barColor = 'linear-gradient(90deg, #10b981, #34d399)';
+      if (invalidKeys[k] || st.pctLeft <= 20) {
+        badgeClass = 'pct-low';
+        barColor = 'linear-gradient(90deg, #e11d48, #fb7185)';
+      } else if (st.pctLeft <= 55) {
+        badgeClass = 'pct-mid';
+        barColor = 'linear-gradient(90deg, #d97706, #fbbf24)';
+      }
+
+      const chip = document.createElement('div');
+      chip.className = 'key-chip';
+
+      const topRow = document.createElement('div');
+      topRow.className = 'key-chip-top';
+
+      const left = document.createElement('div');
+      left.className = 'key-chip-left';
+      left.innerHTML =
+        '<span class="key-chip-num">🔑 Key #' + (i + 1) + ':</span>' +
+        '<span class="key-chip-val">' + masked + '</span>';
+
+      const rightControls = document.createElement('div');
+      rightControls.style.display = 'flex';
+      rightControls.style.alignItems = 'center';
+      rightControls.style.gap = '6px';
+
+      const pctSpan = document.createElement('span');
+      pctSpan.className = 'key-pct-badge ' + badgeClass;
+      pctSpan.textContent = invalidKeys[k] ? '❌ Invalid' : ('🔋 ' + st.pctLeft + '% Left');
+
+      const delBtn = document.createElement('button');
+      delBtn.type = 'button';
+      delBtn.className = 'btn-key-del';
+      delBtn.textContent = '✕ Remove';
+      delBtn.onclick = (function(idx) {
+        return function() { removeKeyAtIndex(idx); };
+      })(i);
+
+      rightControls.appendChild(pctSpan);
+      rightControls.appendChild(delBtn);
+
+      topRow.appendChild(left);
+      topRow.appendChild(rightControls);
+
+      const meterTrack = document.createElement('div');
+      meterTrack.className = 'key-meter-track';
+      const meterFill = document.createElement('div');
+      meterFill.className = 'key-meter-fill';
+      meterFill.style.width = (invalidKeys[k] ? 0 : st.pctLeft) + '%';
+      meterFill.style.background = barColor;
+      meterTrack.appendChild(meterFill);
+
+      const metaRow = document.createElement('div');
+      metaRow.className = 'key-chip-meta';
+
+      let statusNote = '<span><b>' + st.remaining + ' / ' + st.cap + '</b> requests left today (Used ' + st.pctUsed + '%)</span>' +
+        '<span>Resets in ' + resetWaitStr + '</span>';
+
+      if (st.diagNote) {
+        statusNote += '<div style="width:100%;color:#fbbf24;font-weight:700;margin-top:2px;">' + st.diagNote + '</div>';
+      }
+      metaRow.innerHTML = statusNote;
+
+      chip.appendChild(topRow);
+      chip.appendChild(meterTrack);
+      chip.appendChild(metaRow);
+      listEl.appendChild(chip);
+    }
+  }
+
+  async function testAllSavedKeysLive() {
+    const keys = parseApiKeys(apiKeyInput.value);
+    if (keys.length === 0) {
+      showKeyVaultToast('⚠️ Add at least 1 API key first to test.');
+      return;
+    }
+    const testModels = ['gemini-2.5-flash-lite', 'gemini-3.5-flash-lite', 'gemini-2.5-flash'];
+    showKeyVaultToast('🩺 Testing ' + keys.length + ' key(s) against Google Gemini API...');
+    for (let i = 0; i < keys.length; i++) {
+      const k = keys[i];
+      delete invalidKeys[k];
+      let testedOk = false;
+      let lastNote = '';
+      for (const tm of testModels) {
+        try {
+          const ctrl = new AbortController();
+          const tmr = setTimeout(() => ctrl.abort(), 12000);
+          const testUrl = 'https://generativelanguage.googleapis.com/v1beta/models/' + tm + ':generateContent?key=' + encodeURIComponent(k);
+          const resp = await fetch(testUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ contents: [{ parts: [{ text: 'OK' }] }], generationConfig: { maxOutputTokens: 16 } }),
+            signal: ctrl.signal
+          });
+          clearTimeout(tmr);
+          if (resp.ok) {
+            keyLastDiagNote[k] = '✅ Live Test Passed on ' + tm + ' (200 OK — Ready!)';
+            testedOk = true;
+            break;
+          } else {
+            let errData = {};
+            try { errData = await resp.json(); } catch (e) {}
+            const msg = (errData.error && errData.error.message) ? errData.error.message : ('HTTP ' + resp.status);
+            if (resp.status === 400 && /API_KEY_INVALID|API key not valid/i.test(msg) || resp.status === 401 || resp.status === 403) {
+              invalidKeys[k] = true;
+              lastNote = '❌ Key rejected (HTTP ' + resp.status + '): ' + msg.slice(0, 75);
+              break;
+            }
+            lastNote = '⚠️ ' + tm + ' HTTP ' + resp.status + ': ' + msg.slice(0, 70);
+          }
+        } catch (e) {
+          lastNote = '⚠️ Network/Timeout: ' + (e.message || 'Check internet');
+        }
+      }
+      if (!testedOk && lastNote) {
+        keyLastDiagNote[k] = lastNote;
+      }
+      renderSavedKeysVault();
+    }
+    showKeyVaultToast('✅ Key test complete! Check the status under each key below.');
+  }
+
+  function showKeyVaultToast(msg) {
+    const toast = document.getElementById('keySaveToast');
+    if (!toast) return;
+    toast.innerHTML = msg;
+    toast.style.display = 'block';
+    setTimeout(function() { toast.style.display = 'none'; }, 4500);
+  }
+
+  function saveKeysToAppVault(showToastMsg) {
+    try {
+      const inp = document.getElementById('newKeyInput');
+      if (inp && inp.value.trim().length >= 16) {
+        const pendingKeys = extractValidKeysFromString(inp.value.trim());
+        for (const pk of pendingKeys) {
+          if (!savedApiKeysArray.includes(pk)) savedApiKeysArray.push(pk);
+        }
+        inp.value = '';
+      }
+
+      syncMasterKeyInput();
+      slotCooldownUntil = {};
+      slotExhaustedToday = {};
+      invalidKeys = {};
+
+      try {
+        localStorage.setItem(PLAIN_VAULT_STORAGE_KEY, JSON.stringify(savedApiKeysArray));
+        localStorage.setItem('spongebob_api_keys_vault_v26', JSON.stringify(savedApiKeysArray));
+        localStorage.setItem('gemini_api_key', savedApiKeysArray.join(', '));
+      } catch (e) {}
+
+      renderSavedKeysVault();
+      updateProjectConsumptionPlanner();
+
+      if (showToastMsg) {
+        if (savedApiKeysArray.length > 0) {
+          showKeyVaultToast('✅ <b>Saved ' + savedApiKeysArray.length + ' API Key(s) to App!</b>');
+          document.getElementById('status').textContent = 'Saved ' + savedApiKeysArray.length + ' API Key(s) ✓';
+        } else {
+          showKeyVaultToast('⚠️ Paste your API key in Box 1 first, then tap Save.');
+        }
+      }
+    } catch (e) {
+      showKeyVaultToast('⚠️ Could not save keys: ' + (e.message || e));
+    }
+  }
+
+  function loadKeysFromAppVault() {
+    savedApiKeysArray = [];
+    try {
+      const raw = localStorage.getItem(PLAIN_VAULT_STORAGE_KEY)
+        || localStorage.getItem('spongebob_api_keys_vault_v26')
+        || localStorage.getItem('spongebob_api_keys_vault_v25');
+      if (raw) {
+        const arr = JSON.parse(raw);
+        if (Array.isArray(arr)) {
+          savedApiKeysArray = arr.filter(k => typeof k === 'string' && k.trim().length >= 16);
+        }
+      }
+      if (savedApiKeysArray.length === 0) {
+        const legacyRaw = localStorage.getItem('gemini_api_key') || '';
+        if (legacyRaw) savedApiKeysArray = extractValidKeysFromString(legacyRaw);
+      }
+    } catch (e) {}
+    renderSavedKeysVault();
+  }
+
+  function addKeyFromInput() {
+    const inp = document.getElementById('newKeyInput');
+    const raw = (inp.value || '').trim();
+    if (!raw) {
+      showKeyVaultToast('⚠️ Paste an API key into the box first, then tap <b>➕ Add Key</b>.');
+      return;
+    }
+    const found = extractValidKeysFromString(raw);
+    if (found.length === 0) {
+      showKeyVaultToast('⚠️ That key looks too short. Paste a valid Gemini API key.');
+      return;
+    }
+    let addedCount = 0;
+    for (const k of found) {
+      if (!savedApiKeysArray.includes(k)) {
+        savedApiKeysArray.push(k);
+        addedCount++;
+      }
+    }
+    inp.value = '';
+    saveKeysToAppVault(false);
+    showKeyVaultToast('✅ Added ' + (addedCount || found.length) + ' key(s)! Active keys: <b>' + savedApiKeysArray.length + '</b>.');
+  }
+
+  function removeKeyAtIndex(idx) {
+    if (idx < 0 || idx >= savedApiKeysArray.length) return;
+    savedApiKeysArray.splice(idx, 1);
+    saveKeysToAppVault(false);
+    showKeyVaultToast('🗑️ Removed Key #' + (idx + 1) + '. Remaining keys: <b>' + savedApiKeysArray.length + '</b>.');
+  }
+
+  function clearAllKeysVault() {
+    savedApiKeysArray = [];
+    keyLastDiagNote = {};
+    invalidKeys = {};
+    saveKeysToAppVault(false);
+    showKeyVaultToast('🗑️ Cleared all saved API keys.');
+  }
+
+  function resetAllKeyQuotasTo100() {
+    slotCooldownUntil = {};
+    slotExhaustedToday = {};
+    invalidKeys = {};
+    unavailableModels = {};
+    keyLastDiagNote = {};
+    try {
+      localStorage.removeItem(DAILY_USAGE_KEY);
+      localStorage.removeItem('mcq_daily_key_usage_v26');
+    } catch (e) {}
+    renderSavedKeysVault();
+    updateProjectConsumptionPlanner();
+    showKeyVaultToast('🔋 All saved API keys & cooldowns reset to <b>100%</b>!');
+    document.getElementById('status').textContent = 'All API keys restored to 100% capacity ✓';
+  }
+
+  function toggleShowSavedKeys() {
+    showFullKeysInVault = !showFullKeysInVault;
+    const btn = document.getElementById('toggleShowKeysBtn');
+    if (btn) btn.textContent = showFullKeysInVault ? '🙈 Hide Keys' : '👁️ Show Full Keys';
+    renderSavedKeysVault();
+  }
+
+  // ---------------- UNIVERSAL APK-SAFE PASTE ENGINE (v33) ----------------
+  function trySyncDomExecPaste() {
+    // Method A: Temporary off-screen contenteditable div (works in several Android WebView builds where <textarea> execCommand('paste') is ignored)
+    try {
+      const ce = document.createElement('div');
+      ce.setAttribute('contenteditable', 'true');
+      ce.style.cssText = 'position:fixed;left:-9999px;top:0;width:1px;height:1px;opacity:0;';
+      document.body.appendChild(ce);
+      ce.focus();
+      const ok = document.execCommand('paste');
+      const txt = (ce.innerText || ce.textContent || '').trim();
+      document.body.removeChild(ce);
+      if (ok && txt.length > 0) return txt;
+    } catch (e) {}
+
+    // Method B: Temporary off-screen textarea
+    try {
+      const ta = document.createElement('textarea');
+      ta.style.cssText = 'position:fixed;left:-9999px;top:0;width:1px;height:1px;opacity:0;';
+      document.body.appendChild(ta);
+      ta.focus();
+      const ok2 = document.execCommand('paste');
+      const txt2 = (ta.value || '').trim();
+      document.body.removeChild(ta);
+      if (ok2 && txt2.length > 0) return txt2;
+    } catch (e) {}
+
+    return null;
+  }
+
+  function tryAndroidWebViewBridges() {
+    const bridgeCandidates = [
+      window.Android,
+      window.AndroidInterface,
+      window.WebToApp,
+      window.FreeWebToApp,
+      window.Website2APK,
+      window.AppInventor,
+      window.Kodular,
+      window.App,
+      window.webkit
+    ];
+    for (const br of bridgeCandidates) {
+      if (!br) continue;
+      for (const fn of ['getClipboardText', 'getClipboard', 'readClipboard', 'pasteFromClipboard', 'getWebViewString']) {
+        if (typeof br[fn] === 'function') {
+          try {
+            const t = br[fn]();
+            if (t && typeof t === 'string' && t.trim()) return t.trim();
+          } catch (e) {}
+        }
+      }
+    }
+    return null;
+  }
+
+  async function tryReadSystemClipboard() {
+    // 1. Synchronous bridge check
+    const bridgeText = tryAndroidWebViewBridges();
+    if (bridgeText) return bridgeText;
+
+    // 2. Synchronous DOM execCommand('paste') check inside active user tap
+    const domText = trySyncDomExecPaste();
+    if (domText) return domText;
+
+    // 3. Async Clipboard API readText()
+    if (navigator.clipboard && typeof navigator.clipboard.readText === 'function') {
+      try {
+        const t = await navigator.clipboard.readText();
+        if (t && t.trim()) return t.trim();
+      } catch (e) {}
+    }
+
+    // 4. Async Clipboard API read() (for rich text/plain items on newer WebViews)
+    if (navigator.clipboard && typeof navigator.clipboard.read === 'function') {
+      try {
+        const items = await navigator.clipboard.read();
+        for (const item of items) {
+          if (item.types && item.types.includes('text/plain')) {
+            const blob = await item.getType('text/plain');
+            const t = await blob.text();
+            if (t && t.trim()) return t.trim();
+          }
+        }
+      } catch (e) {}
+    }
+
+    return null;
+  }
+
+  let autoExtractAfterNextPaste = false;
+
+  function applyPastedTextToBox(clipText, shouldAutoExtract) {
+    if (!clipText || !clipText.trim()) return false;
+    const box = document.getElementById('pastedText');
+    if (!box) return false;
+    if (lastQuizCompletedFlag) {
+      box.value = clipText;
+      lastQuizCompletedFlag = false;
+    } else {
+      box.value = box.value ? (box.value + '\n\n' + clipText) : clipText;
+    }
+    updateTextStats();
+    const btn = document.getElementById('pasteBtn');
+    if (btn) {
+      btn.textContent = '✅ Pasted & Extracting...';
+      setTimeout(function() { btn.textContent = '📋 Paste from Clipboard'; }, 1600);
+    }
+    if (shouldAutoExtract) {
+      const extractBtn = document.getElementById('extractBtn');
+      if (extractBtn && !extractBtn.disabled) {
+        setTimeout(function() { processExtraction(); }, 80);
+      }
+    }
+    return true;
+  }
+
+  function handleWebViewBlockedPaste(targetType) {
+    const targetBox = targetType === 'key'
+      ? document.getElementById('newKeyInput')
+      : document.getElementById('pastedText');
+
+    if (targetType === 'quiztext') {
+      autoExtractAfterNextPaste = true;
+    }
+
+    // Do NOT force-open the soft keyboard via .focus() when WebView blocks silent clipboard read;
+    // instead show a clear 1-line notice and let a long-press Paste inside the box auto-extract immediately.
+    const statusEl = document.getElementById('status');
+    if (statusEl) {
+      statusEl.innerHTML = '⚠️ Android APK security blocks silent clipboard reading — <b>long-press inside the box above and tap Paste</b> (extraction will start automatically).';
+    }
+    logDiag('WebView blocked silent clipboard read (file:// / FreeWebToApk sandbox). Armed auto-extract on manual Paste.');
+
+    if (targetBox) {
+      try { targetBox.blur(); } catch (e) {}
+    }
+  }
+
+  function onApkModalInput() {}
+  function confirmApkModalPaste() {}
+  function closeApkPasteModal() {
+    const m = document.getElementById('apkPasteModal');
+    if (m) m.style.display = 'none';
+  }
+
+  async function pasteKeyFromClipboard() {
+    const clipText = await tryReadSystemClipboard();
+    if (clipText && clipText.trim()) {
+      document.getElementById('newKeyInput').value = clipText.trim();
+      addKeyFromInput();
+      return;
+    }
+    handleWebViewBlockedPaste('key');
+  }
+
+  async function pasteFromClipboard() {
+    const clipText = await tryReadSystemClipboard();
+    if (clipText && clipText.trim()) {
+      applyPastedTextToBox(clipText, true);
+      return;
+    }
+    handleWebViewBlockedPaste('quiztext');
+  }
+
+  // ---------------- THEME & INITIALIZATION ----------------
+  try {
+    loadKeysFromAppVault();
+    if ((localStorage.getItem('bb_theme') || localStorage.getItem('gojo_theme')) === 'light') {
+      document.body.classList.add('light-theme');
+      document.getElementById('themeBtn').textContent = '🌙 Dark';
+    }
+    checkForSavedOutputRecovery();
+  } catch (e) {}
+
+  function applyEdition(isPatrick) {
+    document.body.classList.toggle('patrick', isPatrick);
+    const b = document.getElementById('editionBtn');
+    const em = document.querySelector('.infinity-emblem');
+    if (b) b.textContent = isPatrick ? '🧽 SpongeBob' : '⭐ Patrick';
+    if (em) em.textContent = isPatrick ? '⭐' : '🧽';
+  }
+
+  function toggleEdition() {
+    const isP = !document.body.classList.contains('patrick');
+    applyEdition(isP);
+    try { localStorage.setItem('bb_edition', isP ? 'patrick' : 'spongebob'); } catch (e) {}
+  }
+  try { applyEdition(localStorage.getItem('bb_edition') === 'patrick'); } catch (e) {}
+
+  function toggleTheme() {
+    const isLight = document.body.classList.toggle('light-theme');
+    document.getElementById('themeBtn').textContent = isLight ? '🌙 Dark' : '☀️ Light';
+    try { localStorage.setItem('bb_theme', isLight ? 'light' : 'dark'); } catch (e) {}
+  }
+
+  function onDailyCapChanged() {
+    renderSavedKeysVault();
+    rebuildPreStartBatchNameInputs();
+    updateProjectConsumptionPlanner();
+  }
+
+  function ensureTxtExtension(nameStr) {
+    let clean = (nameStr || '').trim().replace(/[\\/:*?"<>|]+/g, '_');
+    if (!clean) return 'extracted_mcqs.txt';
+    if (!/\.txt$/i.test(clean)) clean += '.txt';
+    return clean;
+  }
+
+  function stripTxtExtension(nameStr) {
+    return (nameStr || '').trim().replace(/\.txt$/i, '');
+  }
+
+  async function purgePdfMemory() {
+    if (loadedPdfDoc) {
+      try {
+        await loadedPdfDoc.cleanup();
+        await loadedPdfDoc.destroy();
+      } catch (e) {}
+      loadedPdfDoc = null;
+      loadedPdfFileSignature = '';
+    }
+  }
+
+  async function resetForNextSuccessiveQuiz() {
+    await purgePdfMemory();
+    loadedPdfTotalPages = 0;
+    loadedPdfName = 'quiz';
+    lastQuizCompletedFlag = false;
+    extractionSession = { active: false, category: 'quiz', tasks: [], globalKeyMap: {}, systemPrompt: '', customRules: '' };
+
+    document.getElementById('pdfFile').value = '';
+    document.getElementById('imgFiles').value = '';
+    document.getElementById('pastedText').value = '';
+    document.getElementById('mainCustomFileName').value = '';
+    document.getElementById('output').value = '';
+    document.getElementById('pdfPageInfo').textContent = 'PDFs are decoded with coordinate-sorted digital text + auto-sized vision batches and WebView RAM cleanup.';
+    document.getElementById('imgCountHint').textContent = 'Select one or multiple screenshots at once (auto-compressed for fast upload & low-RAM phones).';
+
+    document.getElementById('shareBtn').style.display = 'none';
+    document.getElementById('downloadBtn').style.display = 'none';
+    document.getElementById('copyBtn').style.display = 'none';
+    document.getElementById('nextQuizResetBtn').style.display = 'none';
+    document.getElementById('continueBtn').style.display = 'none';
+    document.getElementById('continueBanner').style.display = 'none';
+    document.getElementById('auditBanner').style.display = 'none';
+    document.getElementById('batchFilesPanel').style.display = 'none';
+    document.getElementById('progressWrap').style.display = 'none';
+    document.getElementById('progressBar').style.width = '0%';
+
+    updateTextStats();
+    updateSaveButtonLabels();
+    updateProjectConsumptionPlanner();
+    document.getElementById('status').textContent = '✨ WebView Memory Purged! Ready for your next Quiz (100% Fresh State) ✓';
+  }
+
+  function enterWorkspace(category) {
+    appCategory = category;
+    document.getElementById('openingScreen').style.display = 'none';
+    document.getElementById('mainWorkspace').style.display = 'block';
+
+    const topQuiz = document.getElementById('topBtnQuiz');
+    const topBook = document.getElementById('topBtnBook');
+    const bookTypeSection = document.getElementById('bookTypeSection');
+    const bookTextLimitHint = document.getElementById('bookTextLimitHint');
+    const mainFileNameLabel = document.getElementById('mainFileNameLabel');
+    const mainCustomFileName = document.getElementById('mainCustomFileName');
+
+    if (category === 'quiz') {
+      topQuiz.className = 'top-mode-btn active-quiz';
+      topBook.className = 'top-mode-btn';
+
+      bookTypeSection.style.display = 'none';
+      bookTextLimitHint.style.display = 'none';
+      document.getElementById('splittedRangesBox').style.display = 'none';
+      document.getElementById('customBatchNamesEditor').style.display = 'none';
+      document.getElementById('continueBanner').style.display = 'none';
+      document.getElementById('continueBtn').style.display = 'none';
+
+      mainFileNameLabel.textContent = '🏷️ Name Your Quiz .txt File';
+      mainCustomFileName.placeholder = 'e.g. Anatomy_Quiz_1 (Leave blank for auto-name)';
+
+      document.getElementById('sourceTabsWrapper').style.display = 'block';
+      document.getElementById('sourceTabsLabel').textContent = '3. Choose Input Source';
+      const tabsGrid = document.getElementById('sourceTabsGrid');
+      tabsGrid.className = 'tabs';
+      document.getElementById('tabImg').style.display = 'block';
+      document.getElementById('tabAll').style.display = 'block';
+
+      setSourceMode(currentMode);
+      updateSaveButtonLabels();
+      updateProjectConsumptionPlanner();
+      document.getElementById('status').textContent = 'Quiz Mode Ready (Universal Zero-Cutoff Active) ✓';
+    } else {
+      topQuiz.className = 'top-mode-btn';
+      topBook.className = 'top-mode-btn active-book';
+
+      bookTypeSection.style.display = 'block';
+      document.getElementById('nextQuizResetBtn').style.display = 'none';
+
+      setBookSubMode(bookSubMode);
+      updateSaveButtonLabels();
+      updateProjectConsumptionPlanner();
+      document.getElementById('status').textContent = 'Book Mode Ready (Universal Zero-Cutoff Engine) ✓';
+    }
+  }
+
+  function setBookSubMode(subMode) {
+    bookSubMode = subMode;
+    document.getElementById('tabBookGeneral').classList.toggle('active', subMode === 'general');
+    document.getElementById('tabBookSplitted').classList.toggle('active', subMode === 'splitted');
+
+    const sourceTabsWrapper = document.getElementById('sourceTabsWrapper');
+    const tabsGrid = document.getElementById('sourceTabsGrid');
+    const splittedRangesBox = document.getElementById('splittedRangesBox');
+    const bookTextLimitHint = document.getElementById('bookTextLimitHint');
+    const mainFileNameLabel = document.getElementById('mainFileNameLabel');
+    const mainCustomFileName = document.getElementById('mainCustomFileName');
+
+    if (subMode === 'general') {
+      sourceTabsWrapper.style.display = 'block';
+      document.getElementById('sourceTabsLabel').textContent = '4. Choose Book Input (PDF or Text ≤ 1,000 Qs)';
+      tabsGrid.className = 'tabs cols-2';
+      document.getElementById('tabImg').style.display = 'none';
+      document.getElementById('tabAll').style.display = 'none';
+      splittedRangesBox.style.display = 'none';
+      bookTextLimitHint.style.display = 'block';
+
+      mainFileNameLabel.textContent = '🏷️ Name Your General Book .txt File';
+      mainCustomFileName.placeholder = 'e.g. CNS_Book (Leave blank for auto-name)';
+
+      if (currentMode !== 'pdf' && currentMode !== 'text') setSourceMode('pdf');
+      else setSourceMode(currentMode);
+    } else {
+      sourceTabsWrapper.style.display = 'none';
+      splittedRangesBox.style.display = 'block';
+      bookTextLimitHint.style.display = 'none';
+
+      mainFileNameLabel.textContent = '🏷️ Base Book Name (Used for Combined File & Default Batch Prefix)';
+      mainCustomFileName.placeholder = 'e.g. CNS_Sensory (Each batch below can also have its own custom name)';
+      setSourceMode('pdf');
+    }
+
+    rebuildPreStartBatchNameInputs();
+    updateProjectConsumptionPlanner();
+    updateSaveButtonLabels();
+  }
+
+  function setSourceMode(mode) {
+    currentMode = mode;
+    document.getElementById('tabPdf').classList.toggle('active', mode === 'pdf');
+    document.getElementById('tabImg').classList.toggle('active', mode === 'img');
+    document.getElementById('tabText').classList.toggle('active', mode === 'text');
+    document.getElementById('tabAll').classList.toggle('active', mode === 'all');
+
+    document.getElementById('pdfSection').style.display = (mode === 'pdf' || mode === 'all') ? 'block' : 'none';
+    document.getElementById('imgSection').style.display = (mode === 'img' || mode === 'all') ? 'block' : 'none';
+    document.getElementById('textSection').style.display = (mode === 'text' || mode === 'all') ? 'block' : 'none';
+
+    rebuildPreStartBatchNameInputs();
+    updateProjectConsumptionPlanner();
+    updateSaveButtonLabels();
+  }
+
+  function onMainFileNameEdited() {
+    if (appCategory === 'book') rebuildPreStartBatchNameInputs();
+    updateProjectConsumptionPlanner();
+    updateSaveButtonLabels();
+  }
+
+  function onRangesInputChanged() {
+    rebuildPreStartBatchNameInputs();
+    updateProjectConsumptionPlanner();
+  }
+
+  function updateSaveButtonLabels() {
+    const fileName = getTxtFileName();
+    const shareBtn = document.getElementById('shareBtn');
+    const downloadBtn = document.getElementById('downloadBtn');
+    if (shareBtn) shareBtn.textContent = '📤 Send ' + fileName + ' (Telegram / Phone)';
+    if (downloadBtn) downloadBtn.textContent = '⬇️ Download ' + fileName;
+  }
+
+  function estimateQuestionCount(text) {
+    if (!text || !text.trim()) return 0;
+    const numbered = text.match(/(?:^|\n)\s*(?:Q\s*\d*[:.-]|\d+\s*[.)-])\s+\S+/gi);
+    if (numbered && numbered.length > 0) return numbered.length;
+    const qMarks = text.match(/\?/g);
+    if (qMarks && qMarks.length > 0) return qMarks.length;
+    return Math.max(1, Math.floor(text.trim().split(/\r?\n/).length / 6));
+  }
+
+  let lastAutoExtractTriggeredAt = 0;
+
+  function handleAnyPastedTextEvent() {
+    setTimeout(function() {
+      const box = document.getElementById('pastedText');
+      if (!box) return;
+      if (lastQuizCompletedFlag) {
+        lastQuizCompletedFlag = false;
+      }
+      updateTextStats();
+      const hasText = box.value && box.value.trim().length > 0;
+      const now = Date.now();
+      if (autoExtractAfterNextPaste && hasText && (now - lastAutoExtractTriggeredAt > 600)) {
+        lastAutoExtractTriggeredAt = now;
+        autoExtractAfterNextPaste = false;
+        const extractBtn = document.getElementById('extractBtn');
+        if (extractBtn && !extractBtn.disabled) {
+          document.getElementById('status').textContent = '⚡ Text pasted! Starting extraction automatically...';
+          setTimeout(function() { processExtraction(); }, 80);
+        }
+      }
+    }, 60);
+  }
+
+  function onSourceTextPasted() {
+    handleAnyPastedTextEvent();
+  }
+
+  function updateTextStats() {
+    const box = document.getElementById('pastedText');
+    const badge = document.getElementById('charBadge');
+    const raw = box.value.trim();
+    if (raw.length === 0) {
+      badge.textContent = '0 chars';
+    } else {
+      const estQs = estimateQuestionCount(raw);
+      if (appCategory === 'book' && bookSubMode === 'general') {
+        badge.textContent = '~' + estQs + ' / 1000 Qs (' + raw.length + ' chars)';
+        badge.style.color = estQs > 1000 ? '#f43f5e' : '';
+      } else {
+        badge.textContent = '~' + estQs + ' Qs (' + raw.length + ' chars) ✓';
+      }
+    }
+    rebuildPreStartBatchNameInputs();
+    updateProjectConsumptionPlanner();
+  }
+
+  function clearPastedText() {
+    const box = document.getElementById('pastedText');
+    box.value = '';
+    lastQuizCompletedFlag = false;
+    autoExtractAfterNextPaste = false;
+    updateTextStats();
+    box.focus();
+    document.getElementById('status').textContent = 'Text cleared ✓';
+  }
+
+  async function ensurePdfLoadedFromInput() {
+    const pdfInput = document.getElementById('pdfFile');
+    if (!pdfInput || !pdfInput.files.length) return null;
+    const file = pdfInput.files[0];
+    const sig = file.name + '::' + file.size + '::' + file.lastModified;
+    if (loadedPdfDoc && loadedPdfFileSignature === sig) {
+      return loadedPdfDoc;
+    }
+    await purgePdfMemory();
+    if (typeof pdfjsLib === 'undefined') {
+      throw new Error('PDF reader library did not finish loading. Check internet connection and retry.');
+    }
+    const arrayBuffer = await file.arrayBuffer();
+    loadedPdfDoc = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    loadedPdfTotalPages = loadedPdfDoc.numPages;
+    loadedPdfFileSignature = sig;
+    return loadedPdfDoc;
+  }
+
+  async function inspectPdfPages() {
+    const pdfInput = document.getElementById('pdfFile');
+    const info = document.getElementById('pdfPageInfo');
+    const status = document.getElementById('status');
+    const mainCustomFileName = document.getElementById('mainCustomFileName');
+
+    await purgePdfMemory();
+
+    if (!pdfInput.files.length) {
+      loadedPdfTotalPages = 0;
+      rebuildPreStartBatchNameInputs();
+      updateProjectConsumptionPlanner();
+      updateSaveButtonLabels();
+      return;
+    }
+    const file = pdfInput.files[0];
+    loadedPdfName = file.name.replace(/\.pdf$/i, '');
+    mainCustomFileName.value = loadedPdfName + '_mcqs';
+
+    const sizeMB = (file.size / (1024 * 1024)).toFixed(1);
+    info.textContent = 'Reading ' + file.name + ' (' + sizeMB + ' MB)...';
+    try {
+      await ensurePdfLoadedFromInput();
+      info.textContent = 'Loaded: ' + file.name + ' (' + sizeMB + ' MB, ' + loadedPdfTotalPages + ' pages). Ready for Zero-Cutoff extraction.';
+      status.textContent = 'PDF Ready (' + loadedPdfTotalPages + ' pages) ✓';
+      logDiag('Loaded PDF: ' + file.name + ' (' + loadedPdfTotalPages + ' pages, ' + sizeMB + ' MB)');
+
+      const rangeInput = document.getElementById('customRangesInput');
+      if (!rangeInput.value.trim() && loadedPdfTotalPages > 0) {
+        rangeInput.placeholder = loadedPdfTotalPages >= 18
+          ? ('e.g. 3-7, 8-12, 13-15 (Total PDF: ' + loadedPdfTotalPages + ' pages)')
+          : ('e.g. 1-' + loadedPdfTotalPages);
+      }
+    } catch (e) {
+      loadedPdfDoc = null;
+      loadedPdfTotalPages = 0;
+      info.textContent = '⚠️ Could not parse PDF: ' + (e.message || e);
+      status.textContent = 'PDF Warning: ' + (e.message || e);
+      logDiag('PDF parse warning: ' + (e.message || e));
+    }
+    rebuildPreStartBatchNameInputs();
+    updateProjectConsumptionPlanner();
+    updateSaveButtonLabels();
+  }
+
+  function updateImageCount() {
+    const files = document.getElementById('imgFiles').files;
+    const hint = document.getElementById('imgCountHint');
+    const mainCustomFileName = document.getElementById('mainCustomFileName');
+    if (files.length === 0) {
+      hint.textContent = 'Select one or multiple screenshots at once.';
+    } else if (files.length === 1) {
+      hint.textContent = '1 image selected: ' + files[0].name + ' (will be auto-compressed for fast upload).';
+      mainCustomFileName.value = files[0].name.replace(/\.[^.]+$/, '') + '_mcqs';
+    } else {
+      hint.textContent = files.length + ' images selected (auto-compressed & extracted in 2-image Zero-Miss batches).';
+      mainCustomFileName.value = files[0].name.replace(/\.[^.]+$/, '') + '_quiz_mcqs';
+    }
+    updateProjectConsumptionPlanner();
+    updateSaveButtonLabels();
+  }
+
+  function getBasePrefixName() {
+    const customMain = stripTxtExtension(document.getElementById('mainCustomFileName').value);
+    if (customMain) return customMain.replace(/_mcqs$/i, '');
+    return loadedPdfName || 'Book';
+  }
+
+  // ---------------- TASK BUILDERS (UNIFIED FOR BOOK & QUIZ!) ----------------
+  function parseSplittedRanges(rangeStr, maxPages) {
+    const rawTokens = (rangeStr || '').split(/[,;،\n]+/).map(s => s.trim()).filter(Boolean);
+    const ranges = [];
+    let batchNum = 0;
+    const basePrefix = getBasePrefixName();
+
+    for (const token of rawTokens) {
+      let inlineName = '';
+      let rangePart = token;
+
+      const colonMatch = token.match(/^([^:]+):\s*(\d+(?:\s*[-–—to]+\s*\d+)?)$/i);
+      const parenMatch = token.match(/^(\d+(?:\s*[-–—to]+\s*\d+)?)\s*\(([^)]+)\)$/i);
+
+      if (colonMatch) {
+        inlineName = colonMatch[1].trim();
+        rangePart = colonMatch[2].trim();
+      } else if (parenMatch) {
+        rangePart = parenMatch[1].trim();
+        inlineName = parenMatch[2].trim();
+      }
+
+      const mRange = rangePart.match(/^(\d+)\s*[-–—to]+\s*(\d+)$/i);
+      const mSingle = rangePart.match(/^(\d+)$/);
+
+      if (mRange) {
+        let s = parseInt(mRange[1], 10);
+        let e = parseInt(mRange[2], 10);
+        if (s > e) { const tmp = s; s = e; e = tmp; }
+        if (maxPages > 0) {
+          s = Math.max(1, Math.min(maxPages, s));
+          e = Math.max(1, Math.min(maxPages, e));
+        }
+        const pages = [];
+        for (let p = s; p <= e; p++) pages.push(p);
+        if (pages.length > 0) {
+          batchNum++;
+          const label = s === e ? ('Page ' + s) : ('Pages ' + s + '–' + e);
+          const fileTag = s === e ? ('Page_' + s) : ('Pages_' + s + '-' + e);
+          const defaultFileName = inlineName
+            ? ensureTxtExtension(inlineName)
+            : ensureTxtExtension(basePrefix + '_Batch' + batchNum + '_' + fileTag);
+          const chosenFileName = userCustomBatchNames['split_' + batchNum]
+            ? ensureTxtExtension(userCustomBatchNames['split_' + batchNum])
+            : defaultFileName;
+
+          ranges.push({
+            id: 'split_' + batchNum,
+            batchNum: batchNum,
+            title: 'Batch ' + batchNum + ' (' + label + ')',
+            shortLabel: 'Batch ' + batchNum + ' (' + label + ')',
+            fileName: chosenFileName,
+            defaultFileName: defaultFileName,
+            pages: pages,
+            apiCallsNeeded: pages.length <= 5 ? 1 : Math.ceil(pages.length / 5)
+          });
+        }
+      } else if (mSingle) {
+        let p = parseInt(mSingle[1], 10);
+        if (maxPages > 0) p = Math.max(1, Math.min(maxPages, p));
+        if (p >= 1) {
+          batchNum++;
+          const defaultFileName = inlineName
+            ? ensureTxtExtension(inlineName)
+            : ensureTxtExtension(basePrefix + '_Batch' + batchNum + '_Page_' + p);
+          const chosenFileName = userCustomBatchNames['split_' + batchNum]
+            ? ensureTxtExtension(userCustomBatchNames['split_' + batchNum])
+            : defaultFileName;
+
+          ranges.push({
+            id: 'split_' + batchNum,
+            batchNum: batchNum,
+            title: 'Batch ' + batchNum + ' (Page ' + p + ')',
+            shortLabel: 'Batch ' + batchNum + ' (Page ' + p + ')',
+            fileName: chosenFileName,
+            defaultFileName: defaultFileName,
+            pages: [p],
+            apiCallsNeeded: 1
+          });
+        }
+      }
+    }
+    return ranges;
+  }
+
+  function buildBookTasksPreview() {
+    const tasks = [];
+    const PAGES_PER_BATCH = 5;
+    const basePrefix = getBasePrefixName();
+
+    if (bookSubMode === 'splitted') {
+      const rangeStr = document.getElementById('customRangesInput').value.trim();
+      const parsed = parseSplittedRanges(rangeStr, loadedPdfTotalPages);
+      for (const r of parsed) {
+        tasks.push({
+          id: r.id,
+          batchNum: r.batchNum,
+          title: r.title,
+          shortLabel: r.shortLabel,
+          fileName: r.fileName,
+          defaultFileName: r.defaultFileName,
+          type: 'pdf',
+          pages: r.pages,
+          apiCallsNeeded: r.apiCallsNeeded,
+          status: 'pending',
+          usedLocalFallback: false,
+          resultText: '',
+          completedSubIdx: 0,
+          partialSubResults: []
+        });
+      }
+    } else {
+      if (currentMode === 'pdf' && loadedPdfTotalPages > 0) {
+        const totalBatches = Math.ceil(loadedPdfTotalPages / PAGES_PER_BATCH);
+        for (let b = 0; b < totalBatches; b++) {
+          const s = b * PAGES_PER_BATCH + 1;
+          const e = Math.min(loadedPdfTotalPages, s + PAGES_PER_BATCH - 1);
+          const pages = [];
+          for (let p = s; p <= e; p++) pages.push(p);
+          const label = s === e ? ('Page ' + s) : ('Pages ' + s + '–' + e);
+          const batchKey = 'gen_pdf_' + (b + 1);
+          const defaultFileName = ensureTxtExtension(basePrefix + '_Batch' + (b + 1) + '_Pages_' + s + '-' + e);
+          const chosenFileName = userCustomBatchNames[batchKey]
+            ? ensureTxtExtension(userCustomBatchNames[batchKey])
+            : defaultFileName;
+
+          tasks.push({
+            id: batchKey,
+            batchNum: b + 1,
+            title: 'Batch ' + (b + 1) + ' (' + label + ')',
+            shortLabel: 'Batch ' + (b + 1) + ' (' + label + ')',
+            fileName: chosenFileName,
+            defaultFileName: defaultFileName,
+            type: 'pdf',
+            pages: pages,
+            apiCallsNeeded: 1,
+            status: 'pending',
+            usedLocalFallback: false,
+            resultText: '',
+            completedSubIdx: 0,
+            partialSubResults: []
+          });
+        }
+      } else if (currentMode === 'text') {
+        const rawText = document.getElementById('pastedText').value.trim();
+        if (rawText.length > 0) {
+          const splitK = splitTextAndAnswerKey(rawText);
+          const hasKey = Object.keys(splitK.keyMap).length > 0;
+          const chunks = splitTextIntoSmartQuestionChunks(hasKey ? splitK.questionsText : rawText, 6500, 45);
+          for (let i = 0; i < chunks.length; i++) {
+            const batchKey = 'gen_txt_' + (i + 1);
+            const defaultFileName = ensureTxtExtension(basePrefix + '_Text_Batch_' + (i + 1));
+            const chosenFileName = userCustomBatchNames[batchKey]
+              ? ensureTxtExtension(userCustomBatchNames[batchKey])
+              : defaultFileName;
+
+            tasks.push({
+              id: batchKey,
+              batchNum: i + 1,
+              title: 'Text Batch ' + (i + 1) + ' of ' + chunks.length,
+              shortLabel: 'Text Batch ' + (i + 1),
+              fileName: chosenFileName,
+              defaultFileName: defaultFileName,
+              type: 'text',
+              textChunk: chunks[i],
+              keyMap: splitK.keyMap,
+              pages: [],
+              apiCallsNeeded: 1,
+              status: 'pending',
+              usedLocalFallback: false,
+              resultText: '',
+              completedSubIdx: 0,
+              partialSubResults: []
+            });
+          }
+        }
+      }
+    }
+    return tasks;
+  }
+
+  function buildQuizTasksList() {
+    const tasks = [];
+    const pdfInput = document.getElementById('pdfFile');
+    const imgInput = document.getElementById('imgFiles');
+    const pastedText = document.getElementById('pastedText').value.trim();
+    const basePrefix = getBasePrefixName();
+    let idxCounter = 0;
+
+    const usePdf = (currentMode === 'pdf' || currentMode === 'all') && pdfInput.files.length > 0 && loadedPdfTotalPages > 0;
+    const useImg = (currentMode === 'img' || currentMode === 'all') && imgInput.files.length > 0;
+    const useText = (currentMode === 'text' || currentMode === 'all') && pastedText.length > 0;
+
+    if (usePdf) {
+      const batchSize = 3;
+      const totalBatches = Math.ceil(loadedPdfTotalPages / batchSize);
+      for (let b = 0; b < totalBatches; b++) {
+        idxCounter++;
+        const s = b * batchSize + 1;
+        const e = Math.min(loadedPdfTotalPages, s + batchSize - 1);
+        const pages = [];
+        for (let p = s; p <= e; p++) pages.push(p);
+        const label = s === e ? ('Page ' + s) : ('Pages ' + s + '–' + e);
+        tasks.push({
+          id: 'quiz_pdf_' + idxCounter,
+          batchNum: idxCounter,
+          title: 'Quiz PDF (' + label + ')',
+          shortLabel: label,
+          fileName: ensureTxtExtension(basePrefix + '_' + label.replace(/\s+/g, '_')),
+          defaultFileName: ensureTxtExtension(basePrefix + '_' + label.replace(/\s+/g, '_')),
+          type: 'pdf',
+          pages: pages,
+          apiCallsNeeded: 1,
+          status: 'pending',
+          usedLocalFallback: false,
+          resultText: '',
+          completedSubIdx: 0,
+          partialSubResults: []
+        });
+      }
+    }
+
+    if (useImg) {
+      const totalImgs = imgInput.files.length;
+      const imgBatchSize = 2;
+      for (let i = 0; i < totalImgs; i += imgBatchSize) {
+        idxCounter++;
+        const endIdx = Math.min(totalImgs, i + imgBatchSize);
+        const fileSlice = [];
+        for (let j = i; j < endIdx; j++) fileSlice.push(imgInput.files[j]);
+        const label = fileSlice.length === 1 ? ('Image ' + (i + 1)) : ('Images ' + (i + 1) + '–' + endIdx);
+        tasks.push({
+          id: 'quiz_img_' + idxCounter,
+          batchNum: idxCounter,
+          title: 'Quiz ' + label,
+          shortLabel: label,
+          fileName: ensureTxtExtension(basePrefix + '_' + label.replace(/\s+/g, '_')),
+          defaultFileName: ensureTxtExtension(basePrefix + '_' + label.replace(/\s+/g, '_')),
+          type: 'img',
+          imgFiles: fileSlice,
+          pages: [],
+          apiCallsNeeded: 1,
+          status: 'pending',
+          usedLocalFallback: false,
+          resultText: '',
+          completedSubIdx: 0,
+          partialSubResults: []
+        });
+      }
+    }
+
+    if (useText) {
+      const splitK = splitTextAndAnswerKey(pastedText);
+      const qText = Object.keys(splitK.keyMap).length > 0 ? splitK.questionsText : pastedText;
+      const chunks = splitTextIntoSmartQuestionChunks(qText, 6500, 30);
+      for (let c = 0; c < chunks.length; c++) {
+        idxCounter++;
+        const label = chunks.length === 1 ? 'Pasted Text' : ('Text Part ' + (c + 1) + '/' + chunks.length);
+        tasks.push({
+          id: 'quiz_txt_' + idxCounter,
+          batchNum: idxCounter,
+          title: 'Quiz ' + label,
+          shortLabel: label,
+          fileName: ensureTxtExtension(basePrefix + '_Part_' + (c + 1)),
+          defaultFileName: ensureTxtExtension(basePrefix + '_Part_' + (c + 1)),
+          type: 'text',
+          textChunk: chunks[c],
+          keyMap: splitK.keyMap,
+          pages: [],
+          apiCallsNeeded: 1,
+          status: 'pending',
+          usedLocalFallback: false,
+          resultText: '',
+          completedSubIdx: 0,
+          partialSubResults: []
+        });
+      }
+    }
+
+    return tasks;
+  }
+
+  function rebuildPreStartBatchNameInputs() {
+    const editorWrap = document.getElementById('customBatchNamesEditor');
+    const listEl = document.getElementById('batchNameEditList');
+
+    if (appCategory !== 'book') {
+      editorWrap.style.display = 'none';
+      return;
+    }
+
+    const tasks = buildBookTasksPreview();
+    if (tasks.length === 0) {
+      editorWrap.style.display = 'none';
+      listEl.innerHTML = '';
+      return;
+    }
+
+    const dailyCapPerKey = getDailyCapPerKey();
+    editorWrap.style.display = 'block';
+    listEl.innerHTML = '';
+
+    for (let i = 0; i < tasks.length; i++) {
+      const t = tasks[i];
+      const pctOfOneKey = Math.round((t.apiCallsNeeded / dailyCapPerKey) * 1000) / 10;
+      const estSec = t.apiCallsNeeded * 6;
+
+      const row = document.createElement('div');
+      row.className = 'batch-name-edit-row';
+
+      const tag = document.createElement('span');
+      tag.className = 'batch-range-tag';
+      tag.innerHTML = t.shortLabel + '<br><span style="color:var(--text-muted);font-weight:600;font-size:0.68rem;">Uses ' + pctOfOneKey + '% of 1 Key (~' + estSec + 's)</span>';
+
+      const inp = document.createElement('input');
+      inp.type = 'text';
+      inp.className = 'batch-name-input';
+      inp.value = stripTxtExtension(t.fileName);
+      inp.placeholder = stripTxtExtension(t.defaultFileName);
+      inp.oninput = (function(taskId, taskIdx) {
+        return function() {
+          const val = this.value.trim();
+          if (val) userCustomBatchNames[taskId] = val;
+          else delete userCustomBatchNames[taskId];
+          if (extractionSession.tasks && extractionSession.tasks[taskIdx]) {
+            extractionSession.tasks[taskIdx].fileName = ensureTxtExtension(val || extractionSession.tasks[taskIdx].defaultFileName);
+            renderBatchFilesUI();
+          }
+        };
+      })(t.id, i);
+
+      const ext = document.createElement('span');
+      ext.style.fontSize = '0.75rem';
+      ext.style.fontWeight = '700';
+      ext.style.color = 'var(--six-eyes)';
+      ext.textContent = '.txt';
+
+      row.appendChild(tag);
+      row.appendChild(inp);
+      row.appendChild(ext);
+      listEl.appendChild(row);
+    }
+  }
+
+  function splitTextIntoSmartQuestionChunks(rawText, maxCharsPerChunk, maxChunksCap) {
+    if (rawText.length <= maxCharsPerChunk * 1.25) return [rawText.trim()];
+    const lines = rawText.split(/\r?\n/);
+    const chunks = [];
+    let currentLines = [];
+    let currentLen = 0;
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      const isNewQuestionLine = /^\s*(?:Q\s*\d*[:.-]|\d+\s*[.)-])\s+\S+/i.test(line);
+
+      if (isNewQuestionLine && currentLen >= maxCharsPerChunk * 0.65 && currentLines.length > 0) {
+        chunks.push(currentLines.join('\n').trim());
+        currentLines = [];
+        currentLen = 0;
+      } else if (currentLen + line.length > maxCharsPerChunk && line.trim() === '' && currentLines.length > 0) {
+        chunks.push(currentLines.join('\n').trim());
+        currentLines = [];
+        currentLen = 0;
+        continue;
+      } else if (currentLen + line.length > maxCharsPerChunk * 1.35 && currentLines.length > 0) {
+        chunks.push(currentLines.join('\n').trim());
+        currentLines = [];
+        currentLen = 0;
+      }
+
+      currentLines.push(line);
+      currentLen += line.length + 1;
+    }
+
+    if (currentLines.length > 0 && currentLines.join('\n').trim().length > 0) {
+      chunks.push(currentLines.join('\n').trim());
+    }
+    if (chunks.length >= 2 && chunks[chunks.length - 1].length < maxCharsPerChunk * 0.3) {
+      const last = chunks.pop();
+      chunks[chunks.length - 1] += '\n' + last;
+    }
+    return chunks.slice(0, maxChunksCap || 45);
+  }
+
+  // ================= COORDINATE-AWARE PDF TEXT & ANSWER-KEY ENGINE =================
+  const KEY_HEADING_SRC = '(?:answer\\s*key|answer\\s*sheet|answer\\s*model|model\\s*answers?|answers?\\s*table|answers?|الإجابات|الاجابات|الإجابة\\s*النموذجية|نموذج\\s*(?:ال)?[إا]جابة|مفتاح\\s*(?:ال)?[إا]جابة)';
+
+  async function extractStructuredPageText(page) {
+    try {
+      const tc = await page.getTextContent();
+      const items = (tc && tc.items) ? tc.items : [];
+      if (items.length === 0) return '';
+
+      const mapped = [];
+      for (const it of items) {
+        if (!it || typeof it.str !== 'string') continue;
+        const s = it.str;
+        if (!s.trim() && !it.hasEOL) continue;
+        const tr = it.transform || [1, 0, 0, 1, 0, 0];
+        mapped.push({ str: s, x: tr[4] || 0, y: tr[5] || 0, w: it.width || (s.length * 4.5) });
+      }
+      if (mapped.length === 0) return '';
+
+      mapped.sort(function(a, b) {
+        if (Math.abs(b.y - a.y) > 3.8) return b.y - a.y;
+        return a.x - b.x;
+      });
+
+      const lines = [];
+      let curLine = [mapped[0]];
+      for (let i = 1; i < mapped.length; i++) {
+        const prev = curLine[curLine.length - 1];
+        const cur = mapped[i];
+        if (Math.abs(cur.y - prev.y) <= 3.8) curLine.push(cur);
+        else { lines.push(curLine); curLine = [cur]; }
+      }
+      if (curLine.length > 0) lines.push(curLine);
+
+      const outLines = [];
+      for (const ln of lines) {
+        ln.sort((a, b) => a.x - b.x);
+        let lineStr = '';
+        for (let j = 0; j < ln.length; j++) {
+          const seg = ln[j];
+          if (j === 0) lineStr += seg.str;
+          else {
+            const prevSeg = ln[j - 1];
+            const gap = seg.x - (prevSeg.x + prevSeg.w);
+            if (gap > 14) lineStr += '    ' + seg.str;
+            else if (gap > 1.5 && !lineStr.endsWith(' ') && !seg.str.startsWith(' ')) lineStr += ' ' + seg.str;
+            else lineStr += seg.str;
+          }
+        }
+        if (lineStr.trim()) outLines.push(lineStr.trim());
+      }
+      return outLines.join('\n');
+    } catch (e) {
+      return '';
+    }
+  }
+
+  function parseAllAnswerKeyFormats(tailText) {
+    const keyMap = {};
+    if (!tailText) return keyMap;
+    const lines = tailText.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+
+    for (let i = 0; i < lines.length - 1; i++) {
+      if (/[A-Za-z]/.test(lines[i]) || /\d/.test(lines[i + 1])) continue;
+      const nums = lines[i].match(/\b\d{1,3}\b/g) || [];
+      const lets = lines[i + 1].match(/\b[A-Ea-eTtFf]\b/g) || [];
+      if (nums.length >= 2 && nums.length === lets.length) {
+        for (let k = 0; k < nums.length; k++) {
+          let val = lets[k].toUpperCase();
+          if (val === 'T') val = 'A';
+          else if (val === 'F') val = 'B';
+          keyMap[parseInt(nums[k], 10)] = val;
+        }
+      }
+    }
+
+    const pairRe = /(?<![\dA-Za-z])\(?\b(\d{1,3})\)?\s*(?:[-–—.):=]\s*|\s{1,12})\(?([A-Ea-e])\b\)?(?![A-Za-z0-9])/g;
+    for (const line of lines) {
+      if (/^[\d\s|,\-.:()]+$/.test(line)) continue;
+      let m;
+      while ((m = pairRe.exec(line)) !== null) {
+        const n = parseInt(m[1], 10);
+        if (!(n in keyMap)) keyMap[n] = m[2].toUpperCase();
+      }
+    }
+    return keyMap;
+  }
+
+  function splitTextAndAnswerKey(text) {
+    const none = { questionsText: (text || '').trim(), keyMap: {} };
+    if (!text || text.length < 15) return none;
+
+    const reH = new RegExp('(?:^|\\n)\\s*' + KEY_HEADING_SRC + '\\b[\\s:\\-]*', 'gi');
+    let m;
+    let lastHeadingMatch = null;
+    while ((m = reH.exec(text)) !== null) lastHeadingMatch = m;
+
+    if (lastHeadingMatch) {
+      const tail = text.slice(lastHeadingMatch.index + lastHeadingMatch[0].length);
+      const pairs = parseAllAnswerKeyFormats(tail);
+      if (Object.keys(pairs).length >= 1) {
+        return { questionsText: text.slice(0, lastHeadingMatch.index).trim(), keyMap: pairs };
+      }
+    }
+
+    const lines = text.split(/\r?\n/);
+    const lineRe = /^\s*(?:(?<![\dA-Za-z])\d{1,3}\s*[-–—.):=]?\s*\(?[A-Ea-e]\)?(?![A-Za-z0-9])[\s,;|]*)+$/;
+    let i = lines.length - 1;
+    while (i >= 0 && (lines[i].trim() === '' || lineRe.test(lines[i]))) i--;
+    const keyLines = lines.slice(i + 1).join('\n');
+    const pairs = parseAllAnswerKeyFormats(keyLines);
+    if (Object.keys(pairs).length >= 3) {
+      return { questionsText: lines.slice(0, i + 1).join('\n').trim(), keyMap: pairs };
+    }
+    return none;
+  }
+
+  function extractMcqsLocallyFromStructuredText(rawText, externalKeyMap) {
+    if (!rawText || !rawText.trim()) return '';
+    const splitObj = splitTextAndAnswerKey(rawText);
+    const combinedKeyMap = Object.assign({}, externalKeyMap || {}, splitObj.keyMap || {});
+    const questionsPart = splitObj.questionsText || rawText;
+
+    const rawLines = questionsPart.split(/\r?\n/);
+    const lines = [];
+    for (let rawLine of rawLines) {
+      let s = rawLine.trim();
+      if (!s) continue;
+      s = s.replace(/(\s{2,}|\t)(?=(?:\([A-Ea-e]\)|[A-Ea-e]\s*[\)\.\-:])\s*\S)/g, '\n');
+      if (/^(?:\([A-Ea-e]\)|[A-Ea-e]\s*[\)\.\-:])\s+/i.test(s)) {
+        s = s.replace(/\s+(?=(?:\([B-Eb-e]\)|[B-Eb-e]\s*[\)\.\-])\s+\S)/g, '\n');
+      }
+      for (const part of s.split('\n')) {
+        if (part.trim()) lines.push(part.trim());
+      }
+    }
+
+    const qStartRe = /^(?:Q\s*\d*\s*[:.\-]\s*|\[?\b(\d{1,3})\]?\s*[\.\)\-:]\s+)(.+)$/i;
+    const choiceRe = /^(?:\(([A-Ea-e])\)|([A-Ea-e])\s*[\.\)\-:])\s*(.+)$/;
+    const inlineAnsRe = /^(?:Answer|Ans|Correct\s*Answer|الإجابة)\s*[:\-]?\s*\(?([A-Ea-e]|True|False)\)?\b/i;
+
+    const questions = [];
+    let currentQ = null;
+    let currentTarget = null;
+    let autoNum = 0;
+
+    for (const line of lines) {
+      if (/^(?:---\s*Page\s*\d+\s*---|Page\s*\d+(?:\s*of\s*\d+)?|\d{1,3})$/i.test(line)) continue;
+
+      const mAns = inlineAnsRe.exec(line);
+      if (mAns && currentQ) {
+        let aVal = mAns[1].toUpperCase();
+        if (aVal === 'TRUE') aVal = 'A';
+        else if (aVal === 'FALSE') aVal = 'B';
+        currentQ.ans = aVal;
+        continue;
+      }
+
+      const mChoice = choiceRe.exec(line);
+      if (mChoice && currentQ) {
+        const letter = (mChoice[1] || mChoice[2]).toUpperCase();
+        let cText = mChoice[3].trim();
+        if (/\*+$|✓|✔/.test(cText)) {
+          cText = cText.replace(/[\*✓✔]+$/, '').trim();
+          if (currentQ.ans === 'Uncertain') currentQ.ans = letter;
+        }
+        currentQ.choices.push([letter, cText]);
+        currentTarget = 'choice';
+        continue;
+      }
+
+      const mQ = qStartRe.exec(line);
+      if (mQ) {
+        if (currentQ && (currentQ.choices.length > 0 || /\?|:|\.{2,}/.test(currentQ.stem))) {
+          questions.push(currentQ);
+        }
+        autoNum++;
+        const qNum = mQ[1] ? parseInt(mQ[1], 10) : autoNum;
+        const qStem = mQ[2].trim();
+        currentQ = { num: qNum, stem: qStem, choices: [], ans: combinedKeyMap[qNum] || 'Uncertain' };
+        currentTarget = 'stem';
+        continue;
+      }
+
+      if (currentQ) {
+        if (currentTarget === 'stem') currentQ.stem += ' ' + line;
+        else if (currentTarget === 'choice' && currentQ.choices.length > 0) {
+          currentQ.choices[currentQ.choices.length - 1][1] += ' ' + line;
+        }
+      }
+    }
+
+    if (currentQ && (currentQ.choices.length > 0 || /\?|:|\.{2,}/.test(currentQ.stem))) {
+      questions.push(currentQ);
+    }
+
+    const outBlocks = [];
+    for (const q of questions) {
+      let ans = q.ans;
+      if (ans === 'Uncertain' && q.num in combinedKeyMap) ans = combinedKeyMap[q.num];
+      if (q.choices.length === 0) {
+        q.choices.push(['A', 'True']);
+        q.choices.push(['B', 'False']);
+      }
+      const bLines = ['Q: ' + q.num + '. ' + q.stem];
+      for (const ch of q.choices) bLines.push(ch[0] + '- ' + ch[1]);
+      bLines.push('Answer: ' + ans);
+      outBlocks.push(bLines.join('\n'));
+    }
+
+    return outBlocks.join('\n\n');
+  }
+
+  function formatKeyMap(map) {
+    const nums = Object.keys(map).map(Number).sort((a, b) => a - b);
+    return nums.map(n => n + ':' + map[n]).join(', ');
+  }
+
+  async function pdfKeyMapFromPages(pdf, pageNums) {
+    try {
+      let joined = '';
+      for (const pn of pageNums) {
+        if (!pdf || pn < 1 || pn > pdf.numPages) continue;
+        const page = await pdf.getPage(pn);
+        const sText = await extractStructuredPageText(page);
+        joined += '\n' + sText;
+        try { page.cleanup(); } catch (e) {}
+      }
+      return splitTextAndAnswerKey(joined).keyMap;
+    } catch (e) {
+      return {};
+    }
+  }
+
+  function patchAnswersFromKey(text, keyMap, force) {
+    if (!text || !keyMap || Object.keys(keyMap).length === 0) return text;
+    return text.split(/\n\s*\n/).map(function(blk) {
+      const t = blk.trim();
+      const m = t.match(/^Q:\s*(?:Q\s*)?(\d{1,3})\b/i);
+      if (!m) return blk;
+      const letter = keyMap[parseInt(m[1], 10)];
+      if (!letter) return blk;
+      const hasAnswer = /Answer:/i.test(t);
+      const current = (t.match(/Answer:\s*([A-E]|Uncertain)\s*$/i) || [])[1];
+      const isUncertain = !hasAnswer || /uncertain/i.test(current || '');
+      if (isUncertain || (force && current && current.toUpperCase() !== letter)) {
+        if (hasAnswer) return t.replace(/Answer:[^\n]*$/i, 'Answer: ' + letter);
+        return t + '\nAnswer: ' + letter;
+      }
+      return blk;
+    }).join('\n\n');
+  }
+
+  function cleanModelOutput(t) {
+    if (!t) return '';
+    let s = t.replace(/```[a-z]*\n?/gi, '').replace(/```/g, '').trim();
+    s = s.replace(/^\s*\**Answer\**\s*[:\-–]\s*\**\(?([A-Ea-e])\)?\b.*$/gim, function(m, l) { return 'Answer: ' + l.toUpperCase(); });
+    s = s.replace(/^\s*\**Answer\**\s*:\s*\**uncertain.*$/gim, 'Answer: Uncertain');
+    return s;
+  }
+
+  function countChoiceLines(blk) {
+    return (blk.match(/^\s*[A-E]-\s*\S/gm) || []).length;
+  }
+
+  function isOutputTruncatedOrCutOff(text, finishReason) {
+    if (finishReason === 'MAX_TOKENS') return true;
+    if (!text || !text.trim()) return false;
+    const blocks = text.trim().split(/\n\s*\n/).filter(Boolean);
+    if (blocks.length === 0) return false;
+    const last = blocks[blocks.length - 1].trim();
+    if (/^Q:/i.test(last) && !/Answer:\s*(?:[A-E]|Uncertain)\s*$/i.test(last)) {
+      return true;
+    }
+    return false;
+  }
+
+  function stripTrailingIncompleteBlock(text) {
+    const blocks = (text || '').trim().split(/\n\s*\n/).filter(Boolean);
+    if (blocks.length === 0) return '';
+    const last = blocks[blocks.length - 1].trim();
+    if (/^Q:/i.test(last) && !/Answer:\s*(?:[A-E]|Uncertain)\s*$/i.test(last)) {
+      blocks.pop();
+    }
+    return blocks.join('\n\n');
+  }
+
+  function getLastQuestionSummary(text) {
+    const blocks = (text || '').trim().split(/\n\s*\n/).filter(Boolean);
+    for (let i = blocks.length - 1; i >= 0; i--) {
+      const firstLine = (blocks[i].split('\n')[0] || '').trim();
+      if (/^Q:/i.test(firstLine)) return firstLine.slice(0, 120);
+    }
+    return '';
+  }
+
+  function dedupeMcqText(text) {
+    const seen = new Set();
+    const out = [];
+    (text || '').trim().split(/\n\s*\n/).forEach(function(blk) {
+      const trimmed = blk.trim();
+      if (!trimmed) return;
+      const norm = trimmed.replace(/^\s*Q:\s*(?:Q\s*)?\d*\s*[-.):]?\s*/i, '')
+        .replace(/Answer:[^\n]*$/i, '').toLowerCase().replace(/[^a-z0-9\u0600-\u06ff]+/g, '');
+      if (norm.length > 28 && seen.has(norm)) return;
+      if (norm.length > 28) seen.add(norm);
+      out.push(trimmed);
+    });
+    return out.join('\n\n');
+  }
+
+  function renderCompletenessAudit(text) {
+    const banner = document.getElementById('auditBanner');
+    if (!banner) return;
+    if (!text || !text.trim()) {
+      banner.style.display = 'none';
+      return;
+    }
+    const blocks = text.trim().split(/\n\s*\n/).filter(b => /^Q:/i.test(b.trim()));
+    const total = blocks.length;
+    if (total === 0) {
+      banner.style.display = 'none';
+      return;
+    }
+
+    let incompleteCount = 0;
+    let uncertainCount = 0;
+    const nums = [];
+
+    for (const blk of blocks) {
+      const cCount = countChoiceLines(blk);
+      const hasAns = /Answer:\s*(?:[A-E]|Uncertain)\s*$/i.test(blk.trim());
+      if (cCount < 2 || !hasAns) incompleteCount++;
+      if (/Answer:\s*Uncertain\s*$/i.test(blk.trim())) uncertainCount++;
+      const m = blk.trim().match(/^Q:\s*(?:Q\s*)?(\d{1,3})\b/i);
+      if (m) nums.push(parseInt(m[1], 10));
+    }
+
+    // Detect gaps only if numbers look sequentially ordered in a single quiz (not multi-chapter restarts)
+    const missingNums = [];
+    if (nums.length >= 3) {
+      for (let i = 1; i < nums.length; i++) {
+        const prev = nums[i - 1];
+        const curr = nums[i];
+        if (curr > prev + 1 && curr - prev <= 6) {
+          for (let g = prev + 1; g < curr; g++) missingNums.push(g);
+        }
+      }
+    }
+
+    const fallbackTasks = (extractionSession.tasks || []).filter(t => t.usedLocalFallback);
+
+    if (incompleteCount === 0 && missingNums.length === 0 && fallbackTasks.length === 0) {
+      banner.className = 'audit-banner audit-ok';
+      banner.innerHTML = '✅ <b>Completeness Check Passed:</b> All <b>' + total + ' MCQs</b> have complete stems, choices, and answers (0 cutoffs, 0 skipped numbers' +
+        (uncertainCount > 0 ? (', ' + uncertainCount + ' marked Uncertain') : '') + ').';
+      banner.style.display = 'block';
+    } else {
+      const notes = [];
+      if (missingNums.length > 0) notes.push('possible skipped Q numbers: <b>#' + missingNums.slice(0, 12).join(', #') + (missingNums.length > 12 ? '...' : '') + '</b>');
+      if (incompleteCount > 0) notes.push('<b>' + incompleteCount + '</b> block(s) with missing choices/answer');
+      if (fallbackTasks.length > 0) notes.push('<b>' + fallbackTasks.length + '</b> batch(es) used Local Fallback (tap <b>🔄 Re-Do</b> on those yellow batches when API is ready)');
+      banner.className = 'audit-banner audit-warn';
+      banner.innerHTML = '🔎 <b>Audit Notice (' + total + ' MCQs extracted):</b> Detected ' + notes.join(' • ') + '. Check the batch list below to 1-tap Re-Do any specific batch.';
+      banner.style.display = 'block';
+    }
+  }
+
+  // ---------------- IMAGE COMPRESSION (Fixes OOM Crashes on Low-RAM Android Phones!) ----------------
+  function compressImageFileToJpegBase64(file, maxEdge, quality) {
+    return new Promise(function(resolve, reject) {
+      const img = new Image();
+      const objUrl = URL.createObjectURL(file);
+      img.onload = function() {
+        try {
+          let w = img.naturalWidth || img.width;
+          let h = img.naturalHeight || img.height;
+          const limit = maxEdge || 1600;
+          if (w > limit || h > limit) {
+            const ratio = Math.min(limit / w, limit / h);
+            w = Math.max(1, Math.round(w * ratio));
+            h = Math.max(1, Math.round(h * ratio));
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext('2d');
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, w, h);
+          ctx.drawImage(img, 0, 0, w, h);
+          const dataUrl = canvas.toDataURL('image/jpeg', quality || 0.82);
+          ctx.clearRect(0, 0, w, h);
+          canvas.width = 0;
+          canvas.height = 0;
+          URL.revokeObjectURL(objUrl);
+          resolve({ mimeType: 'image/jpeg', data: dataUrl.split(',')[1] || '' });
+        } catch (err) {
+          URL.revokeObjectURL(objUrl);
+          // Fallback to raw reader
+          const reader = new FileReader();
+          reader.onload = () => resolve({ mimeType: file.type || 'image/jpeg', data: reader.result.split(',')[1] });
+          reader.onerror = e => reject(e);
+          reader.readAsDataURL(file);
+        }
+      };
+      img.onerror = function() {
+        URL.revokeObjectURL(objUrl);
+        const reader = new FileReader();
+        reader.onload = () => resolve({ mimeType: file.type || 'image/jpeg', data: reader.result.split(',')[1] });
+        reader.onerror = e => reject(e);
+        reader.readAsDataURL(file);
+      };
+      img.src = objUrl;
+    });
+  }
+
+  async function renderPdfPageImageOnly(pdf, pageNum) {
+    const page = await pdf.getPage(pageNum);
+    const baseViewport = page.getViewport({ scale: 1.0 });
+    const scale = Math.min(1.4, 1200 / Math.max(baseViewport.width, 1));
+    const viewport = page.getViewport({ scale: scale });
+
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.floor(viewport.width);
+    canvas.height = Math.floor(viewport.height);
+    const ctx = canvas.getContext('2d');
+
+    await page.render({ canvasContext: ctx, viewport: viewport }).promise;
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.72);
+    const base64Jpeg = dataUrl.split(',')[1] || '';
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    canvas.width = 0;
+    canvas.height = 0;
+    try { page.cleanup(); } catch (e) {}
+    return base64Jpeg;
+  }
+
+  // ---------------- QUOTA HISTORY & USAGE ----------------
+  function getTodayDateKey() {
+    try {
+      return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Los_Angeles' }).format(new Date());
+    } catch (e) {
+      const d = new Date();
+      return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate();
+    }
+  }
+
+  function getDailyKeyUsage() {
+    try {
+      const raw = localStorage.getItem(DAILY_USAGE_KEY);
+      if (!raw) return { date: getTodayDateKey(), counts: {} };
+      const parsed = JSON.parse(raw);
+      if (parsed.date !== getTodayDateKey()) return { date: getTodayDateKey(), counts: {} };
+      return parsed;
+    } catch (e) {
+      return { date: getTodayDateKey(), counts: {} };
+    }
+  }
+
+  function saveDailyKeyUsage(data) {
+    try { localStorage.setItem(DAILY_USAGE_KEY, JSON.stringify(data)); } catch (e) {}
+  }
+
+  function incrementDailyKeyCount(key) {
+    const data = getDailyKeyUsage();
+    const kId = getKeyShortId(key);
+    data.counts[kId] = (data.counts[kId] || 0) + 1;
+    saveDailyKeyUsage(data);
+    renderSavedKeysVault();
+    updateProjectConsumptionPlanner();
+  }
+
+  function parseApiKeys(rawInput) {
+    const newInp = document.getElementById('newKeyInput');
+    if (newInp && newInp.value && newInp.value.trim().length >= 16) {
+      saveKeysToAppVault(false);
+    }
+    const combined = (apiKeyInput.value || '') + ' ' + (rawInput || '');
+    return extractValidKeysFromString(combined);
+  }
+
+  function getModelCandidates(primaryModel) {
+    const ordered = [];
+    if (primaryModel && !unavailableModels[primaryModel]) ordered.push(primaryModel);
+    for (const m of ACTIVE_MODEL_CHAIN) {
+      if (!ordered.includes(m) && !unavailableModels[m]) ordered.push(m);
+    }
+    return ordered.length > 0 ? ordered : ACTIVE_MODEL_CHAIN.slice();
+  }
+
+  function stopExtraction() {
+    stopRequested = true;
+    if (activeFetchController) {
+      try { activeFetchController.abort(); } catch (e) {}
+    }
+    document.getElementById('status').textContent = 'Pausing immediately... saving extracted batches so far.';
+    logDiag('User requested pause/stop.');
+  }
+
+  function updateLiveConsumptionTelemetry(activeKey, activeModel) {
+    const keyLbl = document.getElementById('liveKeyActiveLabel');
+    const progLbl = document.getElementById('liveProjectProgressLabel');
+    const dailyCap = getDailyCapPerKey();
+
+    if (keyLbl) {
+      if (activeKey === 'LOCAL_ENGINE') {
+        keyLbl.innerHTML = '⚡ Active Engine: <b>Built-in Local Smart Extractor</b> (0% API Key Used)';
+      } else if (activeKey) {
+        const idx = savedApiKeysArray.indexOf(activeKey);
+        const st = getKeyHealthStats(activeKey);
+        const kNum = idx >= 0 ? ('Key #' + (idx + 1)) : ('Key …' + activeKey.slice(-4));
+        keyLbl.innerHTML = '🔑 Using <b>' + kNum + '</b> (' + st.pctLeft + '% Left • ' + st.remaining + '/' + st.cap + ' reqs) [' + (activeModel || '').replace('-preview', '') + ']';
+      } else {
+        keyLbl.innerHTML = '🔑 Active Engine: Ready';
+      }
+    }
+
+    if (progLbl) {
+      const pctOf1Key = Math.round((sessionRequestsDone / dailyCap) * 1000) / 10;
+      const plannedPct = Math.round((sessionRequestsPlanned / dailyCap) * 1000) / 10;
+      progLbl.innerHTML = '📊 API Used: <b>' + pctOf1Key + '% of 1 Key</b> (' + sessionRequestsDone + (sessionRequestsPlanned > 0 ? (' / ' + sessionRequestsPlanned + ' reqs • Planned: ' + plannedPct + '% of 1 Key') : ' reqs') + ')';
+    }
+  }
+
+  // ---------------- STRICT PROMPT ----------------
+  const STRICT_PROMPT_LINES = [
+    "You are a professional medical MCQ extraction system operating in STRICT ZERO-OMISSION EXTRACTION MODE.",
+    "Your ONLY task is to extract EVERY SINGLE multiple-choice question (MCQ) from the provided target pages, images, or text and reproduce them faithfully in the required format.",
+    "CRITICAL ZERO-OMISSION RULE: You must achieve 100% question recall. Do NOT skip, merge, summarize, or omit any question—even if a question is unnumbered, short, True/False, clinical vignette, or split across columns/pages.",
+    "Rules:",
+    "1. Every question must begin with 'Q: ' followed by the original question number (if present) and text.",
+    "2. Each answer choice must appear on its own line formatted as 'A- ', 'B- ', 'C- ', 'D- ', 'E- ' (or 'A- True', 'B- False' if True/False).",
+    "3. Merge text broken across lines or page breaks when it belongs to the same question or choice. Ignore unrelated headers, footers, watermarks, and page numbers.",
+    "__RULE4__",
+    "5. The final line of each question must be 'Answer: X' (using uppercase A, B, C, D, E, or Uncertain).",
+    "6. Do not insert blank lines between the question, its choices, and its answer.",
+    "7. Insert exactly ONE blank line between consecutive questions.",
+    "8. If a page contains ONLY an Answer Key table and no new questions, return nothing for that page.",
+    "9. Return ONLY the extracted MCQs. No introductions, markdown blocks, citations, or summaries.",
+    "10. COMPLETENESS: every question MUST include its full stem AND ALL of its answer choices exactly as in the input."
+  ];
+
+  function buildStrictPrompt() {
+    const modeEl = document.getElementById('noKeyMode');
+    const solve = !modeEl || modeEl.value === 'solve';
+    const rule4 = "4. ANSWER KEY PRIORITY: If an 'ANSWER KEY' reference block is provided it is AUTHORITATIVE: match every question to its answer by question number and ALWAYS use that letter. " +
+      (solve
+        ? "If no key exists anywhere for a question, use your medical knowledge to choose the single best answer; write 'Answer: Uncertain' only if the question has no answer choices at all."
+        : "If no key exists for a question, give the answer only if nearly 100% certain; otherwise write 'Answer: Uncertain'.");
+    return STRICT_PROMPT_LINES.join("\n").replace("__RULE4__", rule4);
+  }
+
+  const SAFETY_OFF = ['HARM_CATEGORY_HARASSMENT', 'HARM_CATEGORY_HATE_SPEECH', 'HARM_CATEGORY_SEXUALLY_EXPLICIT', 'HARM_CATEGORY_DANGEROUS_CONTENT']
+    .map(c => ({ category: c, threshold: 'BLOCK_NONE' }));
+
+  // ---------------- BULLETPROOF GEMINI CALLER (65K OUTPUT, NO THINKING WASTE, TIMEOUT, SMART 429 COOLDOWN) ----------------
+  function buildGenerationConfigForModel(modelName) {
+    const cfg = {
+      temperature: 0.0,
+      maxOutputTokens: 65536
+    };
+    if (!noThinkingModels[modelName]) {
+      if (/^gemini-2\.5/i.test(modelName)) {
+        cfg.thinkingConfig = { thinkingBudget: 0 };
+      } else if (/^gemini-3/i.test(modelName)) {
+        cfg.thinkingConfig = { thinkingLevel: 'minimal' };
+      }
+    }
+    return cfg;
+  }
+
+  function parseRetryDelayMs(errMsg, respHeaders) {
+    try {
+      if (respHeaders && respHeaders.get) {
+        const ra = respHeaders.get('Retry-After');
+        if (ra && /^\d+$/.test(ra.trim())) {
+          return Math.min(45000, Math.max(4000, parseInt(ra.trim(), 10) * 1000));
+        }
+      }
+    } catch (e) {}
+    if (errMsg) {
+      const m = errMsg.match(/retry\s+in\s+(\d+(?:\.\d+)?)\s*s/i);
+      if (m) {
+        return Math.min(45000, Math.max(4000, Math.ceil(parseFloat(m[1]) * 1000) + 1500));
+      }
+    }
+    return 14000;
+  }
+
+  async function fetchWithTimeoutAndCorsFallback(url, bodyStr, timeoutMs) {
+    activeFetchController = new AbortController();
+    const timer = setTimeout(function() {
+      try { activeFetchController.abort(); } catch (e) {}
+    }, timeoutMs || 55000);
+
+    try {
+      let resp;
+      try {
+        resp = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: bodyStr,
+          signal: activeFetchController.signal
+        });
+      } catch (firstErr) {
+        if (stopRequested || firstErr.name === 'AbortError') throw firstErr;
+        // Fallback for strict WebViews that reject JSON preflight from file:// or content://
+        resp = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: bodyStr,
+          signal: activeFetchController.signal
+        });
+      }
+      clearTimeout(timer);
+      activeFetchController = null;
+      return resp;
+    } catch (err) {
+      clearTimeout(timer);
+      activeFetchController = null;
+      if (err && err.name === 'AbortError') {
+        throw new Error(stopRequested ? 'PAUSED_BY_USER' : 'REQUEST_TIMEOUT');
+      }
+      throw err;
+    }
+  }
+
+  // Returns { text: string, finishReason: string, model: string }
+  async function callGeminiSmart(keys, models, payload, statusEl, stepLabel) {
+    const usableKeys = (keys || []).filter(k => !invalidKeys[k]);
+    if (usableKeys.length === 0) throw new Error('NO_VALID_API_KEYS');
+
+    let lastErr = 'All keys/models busy';
+    const maxRounds = 3; // Allows waiting out a short RPM cooldown and succeeding instead of failing!
+
+    for (let round = 0; round < maxRounds; round++) {
+      if (stopRequested) return { text: '', finishReason: 'STOPPED', model: '' };
+
+      const liveModels = models.filter(m => !unavailableModels[m]);
+      if (liveModels.length === 0) throw new Error('No available Gemini models for this API key.');
+
+      let earliestReadyTs = Infinity;
+      let triedAnySlotThisRound = false;
+
+      for (let mIdx = 0; mIdx < liveModels.length; mIdx++) {
+        const targetModel = liveModels[mIdx];
+        const minGap = MODEL_MIN_GAP_MS[targetModel] || 5000;
+
+        for (let kOffset = 0; kOffset < usableKeys.length; kOffset++) {
+          if (stopRequested) return { text: '', finishReason: 'STOPPED', model: '' };
+
+          const kIdx = (keyRotationIndex + kOffset) % usableKeys.length;
+          const activeKey = usableKeys[kIdx];
+          if (invalidKeys[activeKey]) continue;
+
+          const slotId = getKeyShortId(activeKey) + '::' + targetModel;
+          if (slotExhaustedToday[slotId]) continue;
+
+          const now = Date.now();
+          const coolUntil = slotCooldownUntil[slotId] || 0;
+          const nextPacedTs = (slotLastCallTs[slotId] || 0) + minGap;
+          const readyAt = Math.max(coolUntil, nextPacedTs);
+
+          if (readyAt > now) {
+            if (readyAt < earliestReadyTs) earliestReadyTs = readyAt;
+            continue;
+          }
+
+          triedAnySlotThisRound = true;
+          slotLastCallTs[slotId] = now;
+
+          updateLiveConsumptionTelemetry(activeKey, targetModel);
+          statusEl.textContent = stepLabel + ' [Key #' + (savedApiKeysArray.indexOf(activeKey) + 1 || (kIdx + 1)) + ' • ' + targetModel.replace('-preview', '') + ']...';
+
+          const url = 'https://generativelanguage.googleapis.com/v1beta/models/' + targetModel + ':generateContent?key=' + encodeURIComponent(activeKey);
+          const reqPayload = {
+            system_instruction: payload.system_instruction,
+            contents: payload.contents,
+            generationConfig: buildGenerationConfigForModel(targetModel),
+            safetySettings: SAFETY_OFF
+          };
+
+          try {
+            let response = await fetchWithTimeoutAndCorsFallback(url, JSON.stringify(reqPayload), 55000);
+            let data = {};
+            try { data = await response.json(); } catch (e) {}
+
+            // Auto-recover if model rejects thinkingConfig
+            if (response.status === 400 && data.error && /thinking|budget|level|unknown name/i.test(data.error.message || '')) {
+              noThinkingModels[targetModel] = true;
+              delete reqPayload.generationConfig.thinkingConfig;
+              logDiag('Disabled thinkingConfig for ' + targetModel + ' (auto-adapted).');
+              response = await fetchWithTimeoutAndCorsFallback(url, JSON.stringify(reqPayload), 55000);
+              data = {};
+              try { data = await response.json(); } catch (e) {}
+            }
+
+            if (!response.ok) {
+              const errObj = data.error || {};
+              const errMsg = errObj.message || ('HTTP ' + response.status);
+              lastErr = errMsg;
+
+              if (response.status === 404) {
+                unavailableModels[targetModel] = true;
+                logDiag('Model ' + targetModel + ' returned 404 — skipped for session.');
+                break; // Move to next model
+              }
+
+              if (response.status === 401 || response.status === 403 || (response.status === 400 && /API_KEY_INVALID|API key not valid/i.test(errMsg))) {
+                invalidKeys[activeKey] = true;
+                keyLastDiagNote[activeKey] = '❌ Invalid/Blocked Key (HTTP ' + response.status + ')';
+                logDiag('Key #' + (kIdx + 1) + ' rejected: ' + errMsg.slice(0, 80));
+                renderSavedKeysVault();
+                continue;
+              }
+
+              if (response.status === 429) {
+                const isDailyHardLimit = /PerDay|RequestsPerDay|daily|limit:\s*0/i.test(errMsg);
+                if (isDailyHardLimit) {
+                  slotExhaustedToday[slotId] = true;
+                  keyLastDiagNote[activeKey] = '⚠️ ' + targetModel + ' daily limit reached (trying next model/key)';
+                  logDiag('Daily cap on Key #' + (kIdx + 1) + ' / ' + targetModel);
+                } else {
+                  const waitMs = parseRetryDelayMs(errMsg, response.headers);
+                  slotCooldownUntil[slotId] = Date.now() + waitMs;
+                  if (slotCooldownUntil[slotId] < earliestReadyTs) earliestReadyTs = slotCooldownUntil[slotId];
+                  keyLastDiagNote[activeKey] = '⏳ Brief RPM cooldown (' + Math.ceil(waitMs / 1000) + 's) on ' + targetModel;
+                  logDiag('HTTP 429 RPM on Key #' + (kIdx + 1) + ' / ' + targetModel + ' — cooling ' + Math.ceil(waitMs / 1000) + 's');
+                }
+                renderSavedKeysVault();
+                continue;
+              }
+
+              if (response.status >= 500) {
+                slotCooldownUntil[slotId] = Date.now() + 8000;
+                logDiag('Google server HTTP ' + response.status + ' on ' + targetModel + ' — rotating...');
+                continue;
+              }
+
+              logDiag('HTTP ' + response.status + ' on ' + targetModel + ': ' + errMsg.slice(0, 90));
+              continue;
+            }
+
+            // SUCCESS!
+            keyRotationIndex = (kIdx + 1) % usableKeys.length;
+            keyLastDiagNote[activeKey] = '✅ Active & Healthy (200 OK on ' + targetModel + ')';
+            sessionRequestsDone++;
+            incrementDailyKeyCount(activeKey);
+            updateLiveConsumptionTelemetry(activeKey, targetModel);
+
+            const cand = (data.candidates && data.candidates[0]) || {};
+            const finishReason = cand.finishReason || 'STOP';
+            const partsList = (cand.content && cand.content.parts) || [];
+            const pieces = [];
+            for (const pt of partsList) {
+              if (pt && !pt.thought && typeof pt.text === 'string') pieces.push(pt.text);
+            }
+            const cleaned = cleanModelOutput(pieces.join('\n'));
+            logDiag(stepLabel + ' OK via ' + targetModel + ' (' + finishReason + ', ' + (cleaned.match(/^Q:\s+/gm) || []).length + ' Qs)');
+            return { text: cleaned, finishReason: finishReason, model: targetModel };
+
+          } catch (err) {
+            if (err.message === 'PAUSED_BY_USER') return { text: '', finishReason: 'STOPPED', model: '' };
+            lastErr = err.message === 'REQUEST_TIMEOUT' ? 'Network timeout (55s)' : (err.message || String(err));
+            slotCooldownUntil[slotId] = Date.now() + 6000;
+            keyLastDiagNote[activeKey] = '⚠️ ' + lastErr.slice(0, 55);
+            logDiag('Network/Timeout on ' + targetModel + ': ' + lastErr);
+          }
+        }
+      }
+
+      // If all non-exhausted slots are in a short RPM cooldown, wait cleanly with live countdown!
+      if (!stopRequested && earliestReadyTs < Infinity && round < maxRounds - 1) {
+        const waitTotalMs = Math.min(35000, Math.max(2000, earliestReadyTs - Date.now() + 500));
+        const waitSecs = Math.ceil(waitTotalMs / 1000);
+        logDiag('All active slots cooling down — auto-waiting ' + waitSecs + 's before continuing...');
+        for (let s = waitSecs; s > 0; s--) {
+          if (stopRequested) return { text: '', finishReason: 'STOPPED', model: '' };
+          statusEl.textContent = '⏳ Rate-limit breather (' + s + 's) so nothing is skipped — ' + stepLabel + '...';
+          await interruptibleSleep(1000);
+        }
+      } else if (!triedAnySlotThisRound) {
+        break;
+      }
+    }
+
+    throw new Error(lastErr);
+  }
+
+  // ---------------- AUTO-CONTINUATION WRAPPER (Prevents ANY Cut-Off Questions!) ----------------
+  async function callGeminiCompleteBatch(keys, models, systemPrompt, baseParts, statusEl, stepLabel) {
+    const first = await callGeminiSmart(
+      keys,
+      models,
+      { system_instruction: { parts: [{ text: systemPrompt }] }, contents: [{ parts: baseParts }] },
+      statusEl,
+      stepLabel
+    );
+    if (stopRequested || !first.text) return first.text || '';
+
+    let combined = first.text;
+    let lastFinish = first.finishReason;
+    let contPass = 0;
+
+    while (!stopRequested && contPass < 2 && isOutputTruncatedOrCutOff(combined, lastFinish)) {
+      contPass++;
+      combined = stripTrailingIncompleteBlock(combined);
+      const lastQ = getLastQuestionSummary(combined);
+      logDiag('Detected cutoff (' + lastFinish + ') — running automatic continuation pass #' + contPass + ' after: ' + lastQ);
+      statusEl.textContent = stepLabel + ' — Finishing remaining questions (continuation #' + contPass + ')...';
+
+      const contParts = baseParts.concat([
+        {
+          text: 'CONTINUATION INSTRUCTION: You already extracted up to and including this question: "' + lastQ + '".\n' +
+            'Now extract ONLY the REMAINING questions that come AFTER that question in the input above. Do NOT repeat any already-extracted question. Use the exact same Q:/A-/Answer: format.'
+        }
+      ]);
+
+      try {
+        const next = await callGeminiSmart(
+          keys,
+          models,
+          { system_instruction: { parts: [{ text: systemPrompt }] }, contents: [{ parts: contParts }] },
+          statusEl,
+          stepLabel + ' [Cont #' + contPass + ']'
+        );
+        if (!next.text || !next.text.trim()) break;
+        combined = dedupeMcqText(combined + '\n\n' + next.text.trim());
+        lastFinish = next.finishReason;
+      } catch (e) {
+        logDiag('Continuation pass stopped: ' + (e.message || e));
+        break;
+      }
+    }
+
+    return combined.trim();
+  }
+
+  // ---------------- BATCH EXECUTORS (PDF, IMAGES, TEXT) ----------------
+  async function extractPdfSubBatchGuaranteed(pdfDoc, subPages, rangeLastPage, globalKeyMap, systemPrompt, customRules, keys, models, statusEl, stepLabel) {
+    const pStart = subPages[0];
+    const pEnd = subPages[subPages.length - 1];
+    const paceMode = document.getElementById('paceMode').value;
+
+    const pageTexts = [];
+    let combinedBatchText = '';
+    let scannedCount = 0;
+
+    for (const pNum of subPages) {
+      if (stopRequested) return { text: '', usedLocal: false };
+      const page = await pdfDoc.getPage(pNum);
+      const sText = await extractStructuredPageText(page);
+      try { page.cleanup(); } catch (e) {}
+      pageTexts.push({ pageNum: pNum, text: sText, isScanned: (!sText || sText.length < 80) });
+      if (!sText || sText.length < 80) scannedCount++;
+      combinedBatchText += '\n--- Page ' + pNum + ' ---\n' + sText;
+    }
+
+    // If multiple scanned pages landed in one batch (>2), split them into 2-page sub-groups for high vision accuracy & low RAM!
+    if (scannedCount > 2 && subPages.length > 2) {
+      logDiag(stepLabel + ': Detected ' + scannedCount + ' scanned pages — splitting into 2-page Vision chunks.');
+      const pieces = [];
+      let anyLocal = false;
+      for (let i = 0; i < subPages.length; i += 2) {
+        if (stopRequested) break;
+        const mini = subPages.slice(i, i + 2);
+        const r = await extractPdfSubBatchGuaranteed(
+          pdfDoc, mini, rangeLastPage, globalKeyMap, systemPrompt, customRules, keys, models, statusEl,
+          stepLabel + ' [Scan p.' + mini[0] + (mini.length > 1 ? ('–' + mini[mini.length - 1]) : '') + ']'
+        );
+        if (r.text) pieces.push(r.text);
+        if (r.usedLocal) anyLocal = true;
+      }
+      return { text: pieces.join('\n\n').trim(), usedLocal: anyLocal };
+    }
+
+    let batchKeyMap = Object.assign({}, globalKeyMap || {});
+    const localSplit = splitTextAndAnswerKey(combinedBatchText);
+    Object.assign(batchKeyMap, localSplit.keyMap || {});
+
+    if (rangeLastPage && rangeLastPage > pEnd && rangeLastPage <= pdfDoc.numPages) {
+      const kpMap = await pdfKeyMapFromPages(pdfDoc, [rangeLastPage]);
+      Object.assign(batchKeyMap, kpMap);
+    }
+
+    const localExtracted = extractMcqsLocallyFromStructuredText(combinedBatchText, batchKeyMap);
+    const localQCount = (localExtracted.match(/^Q:\s+/gm) || []).length;
+
+    if (paceMode === 'localonly' || (keys.length === 0 && localQCount > 0)) {
+      updateLiveConsumptionTelemetry('LOCAL_ENGINE', 'local');
+      statusEl.textContent = stepLabel + ' — Extracted ' + localQCount + ' MCQs via Instant Local Engine ✓';
+      await interruptibleSleep(50);
+      return { text: localExtracted, usedLocal: true };
+    }
+
+    const keySummary = formatKeyMap(batchKeyMap);
+    const batchParts = [
+      {
+        text: 'TARGET PAGES TO EXTRACT (Pages ' + pStart + ' to ' + pEnd + '):\n' +
+          'Extract EVERY SINGLE MCQ that appears on Pages ' + pStart + ' to ' + pEnd + ' in the exact required format. Do NOT stop early or skip any question.'
+      }
+    ];
+
+    for (const pt of pageTexts) {
+      if (!pt.isScanned) {
+        batchParts.push({ text: '--- Page ' + pt.pageNum + ' Text ---\n' + pt.text });
+      } else {
+        const b64 = await renderPdfPageImageOnly(pdfDoc, pt.pageNum);
+        batchParts.push({ text: '--- Page ' + pt.pageNum + ' (Scanned Image) ---' });
+        if (b64) batchParts.push({ inline_data: { mime_type: 'image/jpeg', data: b64 } });
+        if (pt.text) batchParts.push({ text: pt.text });
+      }
+    }
+
+    if (keySummary) {
+      batchParts.push({
+        text: 'AUTHORITATIVE CHAPTER ANSWER KEY (Match by question number and ALWAYS use these letters):\n' + keySummary
+      });
+    }
+
+    if (customRules) {
+      batchParts.push({ text: 'Additional User Instructions:\n' + customRules });
+    }
+
+    try {
+      let aiResult = await callGeminiCompleteBatch(keys, models, systemPrompt, batchParts, statusEl, stepLabel);
+      aiResult = patchAnswersFromKey(cleanModelOutput(aiResult || ''), batchKeyMap, true);
+      return { text: aiResult.trim(), usedLocal: false };
+    } catch (apiErr) {
+      if (paceMode === 'hybrid' && localQCount > 0) {
+        updateLiveConsumptionTelemetry('LOCAL_ENGINE', 'local');
+        logDiag(stepLabel + ': API failed (' + apiErr.message + ') — used Local Fallback (' + localQCount + ' Qs).');
+        statusEl.textContent = stepLabel + ' — API exhausted; saved ' + localQCount + ' MCQs via Local Fallback ✓';
+        return { text: localExtracted.trim(), usedLocal: true };
+      }
+      throw apiErr;
+    }
+  }
+
+  async function extractImageBatchGuaranteed(imgFiles, systemPrompt, customRules, keys, models, statusEl, stepLabel) {
+    const imgParts = [];
+    for (let j = 0; j < imgFiles.length; j++) {
+      if (stopRequested) return { text: '', usedLocal: false };
+      statusEl.textContent = stepLabel + ' — Optimizing image ' + (j + 1) + '/' + imgFiles.length + '...';
+      const compressed = await compressImageFileToJpegBase64(imgFiles[j], 1600, 0.82);
+      imgParts.push({ text: '--- Quiz Image ' + (j + 1) + ' ---' });
+      imgParts.push({ inline_data: { mime_type: compressed.mimeType, data: compressed.data } });
+    }
+
+    let userPrompt = 'Extract EVERY SINGLE MCQ visible across these quiz image(s) in the exact required format. Do NOT skip any question or cut off any choices.';
+    if (customRules) userPrompt += '\n\nAdditional User Instructions:\n' + customRules;
+    imgParts.push({ text: userPrompt });
+
+    const aiResult = await callGeminiCompleteBatch(keys, models, systemPrompt, imgParts, statusEl, stepLabel);
+    return { text: cleanModelOutput(aiResult || '').trim(), usedLocal: false };
+  }
+
+  async function extractTextChunkGuaranteed(chunk, keyMap, systemPrompt, customRules, keys, models, statusEl, stepLabel) {
+    const paceMode = document.getElementById('paceMode').value;
+    if (paceMode === 'localonly' || keys.length === 0) {
+      updateLiveConsumptionTelemetry('LOCAL_ENGINE', 'local');
+      statusEl.textContent = stepLabel + ' [Instant Local Engine]...';
+      await interruptibleSleep(50);
+      return { text: extractMcqsLocallyFromStructuredText(chunk, keyMap), usedLocal: true };
+    }
+
+    const keyText = formatKeyMap(keyMap || {});
+    const expectedQs = estimateQuestionCount(chunk);
+
+    const parts = [{ text: 'Quiz Source Text:\n' + chunk }];
+    if (keyText) {
+      parts.push({ text: 'ANSWER KEY (AUTHORITATIVE — use these letters, matched by question number; never write Uncertain for these numbers):\n' + keyText });
+    }
+    parts.push({
+      text: 'Extract EVERY SINGLE MCQ from the text above in the exact required format (approximately ' + expectedQs + ' questions — do NOT omit any, and keep ALL choices of every question).' +
+        (customRules ? ('\n\nAdditional User Instructions:\n' + customRules) : '')
+    });
+
+    try {
+      const raw = await callGeminiCompleteBatch(keys, models, systemPrompt, parts, statusEl, stepLabel);
+      const res = patchAnswersFromKey(cleanModelOutput(raw), keyMap, true);
+      if (res && res.trim()) return { text: res.trim(), usedLocal: false };
+    } catch (e) {
+      if (paceMode !== 'hybrid') throw e;
+      logDiag(stepLabel + ': API failed (' + e.message + ') — used Local Fallback.');
+    }
+
+    statusEl.textContent = stepLabel + ' — Auto-finishing with Built-in Local Extractor...';
+    return { text: extractMcqsLocallyFromStructuredText(chunk, keyMap), usedLocal: true };
+  }
+
+  // ---------------- PROJECT & KEY % CONSUMPTION PLANNER ----------------
+  function buildQuizTasksEstimate() {
+    let calls = 0;
+    let itemsDesc = [];
+    const pdfInput = document.getElementById('pdfFile');
+    const imgInput = document.getElementById('imgFiles');
+    const pastedText = document.getElementById('pastedText').value.trim();
+
+    if ((currentMode === 'pdf' || currentMode === 'all') && loadedPdfTotalPages > 0) {
+      const pdfCalls = Math.ceil(loadedPdfTotalPages / 3);
+      calls += pdfCalls;
+      itemsDesc.push(loadedPdfTotalPages + ' PDF pages (' + pdfCalls + ' batches)');
+    } else if ((currentMode === 'pdf' || currentMode === 'all') && pdfInput && pdfInput.files.length > 0) {
+      calls += 1;
+      itemsDesc.push('1 PDF file');
+    }
+
+    if ((currentMode === 'img' || currentMode === 'all') && imgInput && imgInput.files.length > 0) {
+      const imgCalls = Math.ceil(imgInput.files.length / 2);
+      calls += imgCalls;
+      itemsDesc.push(imgInput.files.length + ' images (' + imgCalls + ' batches)');
+    }
+
+    if ((currentMode === 'text' || currentMode === 'all') && pastedText.length > 0) {
+      const splitK = splitTextAndAnswerKey(pastedText);
+      const qText = Object.keys(splitK.keyMap).length > 0 ? splitK.questionsText : pastedText;
+      const chunks = splitTextIntoSmartQuestionChunks(qText, 6500, 30);
+      calls += chunks.length;
+      itemsDesc.push('~' + estimateQuestionCount(qText) + ' text Qs (' + chunks.length + ' batch)');
+    }
+
+    return { calls: calls, desc: itemsDesc.join(' + ') };
+  }
+
+  function formatKeyPercentString(apiCalls, dailyCapPerKey) {
+    if (apiCalls <= 0) return '0% of 1 Key';
+    const pctOfOneKey = Math.round((apiCalls / dailyCapPerKey) * 1000) / 10;
+    if (pctOfOneKey <= 100) return pctOfOneKey + '% of 1 Key';
+    const keysFloat = (apiCalls / dailyCapPerKey).toFixed(2).replace(/\.00$/, '');
+    return pctOfOneKey + '% (' + keysFloat + ' Keys)';
+  }
+
+  function updateProjectConsumptionPlanner() {
+    const keys = parseApiKeys(apiKeyInput.value);
+    const numKeys = keys.length;
+    const effectiveKeysForCalc = Math.max(1, numKeys);
+    const dailyCapPerKey = getDailyCapPerKey();
+    const agg = getAllKeysAggregateHealth(keys);
+    const paceMode = document.getElementById('paceMode').value;
+
+    const statProjectConsume = document.getElementById('statProjectConsume');
+    const statProjectConsumeSub = document.getElementById('statProjectConsumeSub');
+    const statEstTime = document.getElementById('statEstTime');
+    const statTimeSub = document.getElementById('statTimeSub');
+    const statVaultRemaining = document.getElementById('statVaultRemaining');
+    const statVaultRemainingSub = document.getElementById('statVaultRemainingSub');
+    const statTotalBatches = document.getElementById('statTotalBatches');
+    const statBatchesSub = document.getElementById('statBatchesSub');
+    const scheduleBox = document.getElementById('scheduleBreakdown');
+
+    if (numKeys === 0) {
+      statVaultRemaining.textContent = 'Local Mode Ready';
+      statVaultRemainingSub.textContent = '0 Keys (Uses Local Engine)';
+    } else {
+      statVaultRemaining.textContent = agg.avgPctLeft + '% Left';
+      statVaultRemainingSub.textContent = agg.totalRem + ' / ' + agg.totalCap + ' reqs left today';
+    }
+
+    const secPerCall = paceMode === 'localonly' ? 0.4 : (effectiveKeysForCalc > 1 ? 5 : 7);
+
+    if (appCategory === 'quiz') {
+      const qEst = buildQuizTasksEstimate();
+      if (qEst.calls === 0) {
+        statProjectConsume.textContent = '0% of 1 Key';
+        statProjectConsumeSub.textContent = 'Select Quiz Input';
+        statEstTime.textContent = '~0s';
+        statTimeSub.textContent = 'Waiting for Quiz';
+        statTotalBatches.textContent = '0 Batches';
+        statBatchesSub.textContent = 'Quiz Mode';
+        scheduleBox.innerHTML = 'Select a Quiz PDF, screenshots, or paste text above to see exact key % consumption and extraction time.';
+        return;
+      }
+
+      const pctStr = paceMode === 'localonly' ? '0% (Local)' : formatKeyPercentString(qEst.calls, dailyCapPerKey);
+      const totalSec = qEst.calls * secPerCall;
+
+      statProjectConsume.textContent = pctStr;
+      statProjectConsumeSub.textContent = qEst.calls + ' of ' + dailyCapPerKey + ' daily reqs';
+      statEstTime.textContent = formatSecondsHuman(totalSec);
+      statTimeSub.textContent = '~' + secPerCall + 's per batch';
+      statTotalBatches.textContent = qEst.calls + (qEst.calls === 1 ? ' Batch' : ' Batches');
+      statBatchesSub.textContent = qEst.desc;
+
+      scheduleBox.innerHTML =
+        '<div class="day-item">' +
+        '<span class="day-badge day-today">⚡ Quiz Ready</span>' +
+        'This quiz (' + qEst.desc + ') uses <b>' + pctStr + '</b> (' + qEst.calls + ' batch' + (qEst.calls === 1 ? '' : 'es') + ') and takes <b>' + formatSecondsHuman(totalSec) + '</b>. Auto-pacing &amp; continuation active!' +
+        '</div>';
+      return;
+    }
+
+    const tasks = buildBookTasksPreview();
+    if (tasks.length === 0) {
+      statProjectConsume.textContent = '0% of 1 Key';
+      statProjectConsumeSub.textContent = 'Select Book Input';
+      statEstTime.textContent = '~0s';
+      statTimeSub.textContent = 'Waiting for input';
+      statTotalBatches.textContent = '0 Batches';
+      statBatchesSub.textContent = '0 Pages';
+      scheduleBox.innerHTML = 'Select your Book PDF above (and enter page ranges if in Splitted Mode) to see batch estimates.';
+      return;
+    }
+
+    const totalApiCalls = tasks.reduce((acc, t) => acc + t.apiCallsNeeded, 0);
+    const totalPages = tasks.reduce((acc, t) => acc + (t.pages ? t.pages.length : 0), 0);
+    const totalSecAll = totalApiCalls * secPerCall;
+    const pctStr = paceMode === 'localonly' ? '0% (Local Engine)' : formatKeyPercentString(totalApiCalls, dailyCapPerKey);
+    const keysNeededOneDay = Math.max(1, Math.ceil(totalApiCalls / dailyCapPerKey));
+
+    statProjectConsume.textContent = pctStr;
+    statProjectConsumeSub.textContent = 'Needs ' + keysNeededOneDay + (keysNeededOneDay === 1 ? ' Key for 1-Day' : ' Keys for 1-Day');
+    statEstTime.textContent = formatSecondsHuman(totalSecAll);
+    statTimeSub.textContent = totalApiCalls + ' Batches Total';
+    statTotalBatches.textContent = tasks.length + (tasks.length === 1 ? ' Batch' : ' Batches');
+    statBatchesSub.textContent = totalPages > 0 ? (totalPages + ' Pages Selected') : 'Text Chunks';
+
+    let perBatchLines = [];
+    for (let i = 0; i < Math.min(tasks.length, 8); i++) {
+      const b = tasks[i];
+      const bPct = Math.round((b.apiCallsNeeded / dailyCapPerKey) * 1000) / 10;
+      const bTime = formatSecondsHuman(b.apiCallsNeeded * secPerCall);
+      perBatchLines.push('<b>' + stripTxtExtension(b.fileName) + '</b> (' + b.shortLabel + '): <code>' + bPct + '% of 1 Key</code> (' + bTime + ')');
+    }
+    if (tasks.length > 8) perBatchLines.push('...and ' + (tasks.length - 8) + ' more batches');
+
+    scheduleBox.innerHTML =
+      '<div class="day-item">' +
+      '📊 <b>Total Project:</b> Uses <b>' + pctStr + '</b> (' + totalApiCalls + ' requests across ' + tasks.length + ' batches) • Est. <b>' + formatSecondsHuman(totalSecAll) + '</b>.<br>' +
+      '📦 <b>Batches:</b><br>• ' + perBatchLines.join('<br>• ') +
+      '</div>';
+  }
+
+  function summarizeBatchRangeList(batches) {
+    if (!batches || batches.length === 0) return 'None';
+    if (batches.length <= 5) return batches.map(b => b.shortLabel).join(', ');
+    return batches.slice(0, 3).map(b => b.shortLabel).join(', ') +
+      ' ... to ' + batches[batches.length - 1].shortLabel +
+      ' (' + batches.length + ' batches)';
+  }
+
+  // ---------------- BATCH UI RENDERER (WORKS FOR BOTH QUIZ & BOOK!) ----------------
+  function rebuildCombinedOutputFromSession() {
+    const output = document.getElementById('output');
+    const parts = extractionSession.tasks
+      .filter(t => t.status === 'done' && t.resultText)
+      .map(t => t.resultText.trim());
+    let merged = dedupeMcqText(parts.join('\n\n'));
+    if (extractionSession.category === 'book' && bookSubMode === 'general') {
+      merged = capTextAtThousandQuestions(merged);
+    }
+    output.value = merged;
+    output.scrollTop = output.scrollHeight;
+    if (merged) {
+      showSaveButtons();
+      const doneCnt = extractionSession.tasks.filter(t => t.status === 'done').length;
+      persistOutputSnapshot(getTxtFileName(), merged, doneCnt, extractionSession.tasks.length);
+    }
+    return merged;
+  }
+
+  function renderBatchFilesUI() {
+    const panel = document.getElementById('batchFilesPanel');
+    const container = document.getElementById('batchListContainer');
+    const dlAllBtn = document.getElementById('downloadAllBatchesBtn');
+
+    if (!extractionSession.tasks || extractionSession.tasks.length === 0) {
+      panel.style.display = 'none';
+      return;
+    }
+
+    const dailyCap = getDailyCapPerKey();
+    const isBook = extractionSession.category === 'book';
+    panel.style.display = 'block';
+    container.innerHTML = '';
+
+    let doneCount = 0;
+    for (let i = 0; i < extractionSession.tasks.length; i++) {
+      const t = extractionSession.tasks[i];
+      const row = document.createElement('div');
+      row.className = 'batch-row' +
+        (t.status === 'done' ? (t.usedLocalFallback ? ' done local-fallback' : ' done') : (t.status === 'running' ? ' active-run' : ''));
+
+      const qCount = t.resultText ? (t.resultText.match(/^Q:\s+/gm) || []).length : 0;
+      const pctOf1Key = Math.round((t.apiCallsNeeded / dailyCap) * 1000) / 10;
+
+      let statusBadge = '⏳ Pending (' + pctOf1Key + '% of 1 Key)';
+      if (t.status === 'done') {
+        doneCount++;
+        statusBadge = t.usedLocalFallback
+          ? ('⚠️ Local Fallback (' + qCount + ' Qs)')
+          : ('✅ Ready (' + qCount + ' Qs)');
+      } else if (t.status === 'running') {
+        statusBadge = '⚡ Extracting...';
+      } else if (t.status === 'paused') {
+        statusBadge = '⏸️ Paused';
+      }
+
+      const infoDiv = document.createElement('div');
+      infoDiv.className = 'batch-info';
+
+      const titleSpan = document.createElement('span');
+      titleSpan.className = 'batch-name';
+      titleSpan.textContent = t.title + ' • ' + statusBadge;
+      infoDiv.appendChild(titleSpan);
+
+      if (isBook) {
+        const renameWrap = document.createElement('div');
+        renameWrap.className = 'batch-inline-rename';
+        const renameInput = document.createElement('input');
+        renameInput.type = 'text';
+        renameInput.value = stripTxtExtension(t.fileName);
+        renameInput.placeholder = 'Batch file name';
+        renameInput.oninput = (function(taskIndex, taskId) {
+          return function() {
+            const newName = ensureTxtExtension(this.value.trim() || extractionSession.tasks[taskIndex].defaultFileName);
+            extractionSession.tasks[taskIndex].fileName = newName;
+            if (this.value.trim()) userCustomBatchNames[taskId] = this.value.trim();
+          };
+        })(i, t.id);
+
+        const extLabel = document.createElement('span');
+        extLabel.style.fontSize = '0.73rem';
+        extLabel.style.fontWeight = '700';
+        extLabel.style.color = 'var(--six-eyes)';
+        extLabel.textContent = '.txt';
+
+        renameWrap.appendChild(renameInput);
+        renameWrap.appendChild(extLabel);
+        infoDiv.appendChild(renameWrap);
+      }
+
+      const actionsDiv = document.createElement('div');
+      actionsDiv.className = 'batch-actions';
+
+      if (t.status === 'done' && t.resultText) {
+        if (isBook) {
+          const dlBtn = document.createElement('button');
+          dlBtn.type = 'button';
+          dlBtn.className = 'btn-batch-dl';
+          dlBtn.textContent = '⬇️ .txt';
+          dlBtn.onclick = function() { downloadSingleBatch(i); };
+
+          const shBtn = document.createElement('button');
+          shBtn.type = 'button';
+          shBtn.className = 'btn-batch-share';
+          shBtn.textContent = '📤 Share';
+          shBtn.onclick = function() { shareSingleBatch(i); };
+
+          actionsDiv.appendChild(dlBtn);
+          actionsDiv.appendChild(shBtn);
+        }
+
+        const redoBtn = document.createElement('button');
+        redoBtn.type = 'button';
+        redoBtn.className = 'btn-batch-share';
+        redoBtn.style.background = '#e0457b';
+        redoBtn.textContent = '🔄 Re-Do';
+        redoBtn.title = 'Re-extract this specific batch cleanly';
+        redoBtn.onclick = function() { reExtractSingleBatch(i); };
+        actionsDiv.appendChild(redoBtn);
+      } else if (t.status !== 'running') {
+        const runFromHereBtn = document.createElement('button');
+        runFromHereBtn.type = 'button';
+        runFromHereBtn.textContent = '▶️ Resume Here';
+        runFromHereBtn.className = 'btn-batch-share';
+        runFromHereBtn.onclick = function() { runSessionFromBatchIndex(i); };
+        actionsDiv.appendChild(runFromHereBtn);
+      }
+
+      row.appendChild(infoDiv);
+      row.appendChild(actionsDiv);
+      container.appendChild(row);
+    }
+
+    dlAllBtn.style.display = (isBook && doneCount > 0) ? 'inline-block' : 'none';
+  }
+
+  function downloadSingleBatch(taskIndex) {
+    const t = extractionSession.tasks[taskIndex];
+    if (!t || !t.resultText) return;
+    triggerTxtDownload(t.resultText, ensureTxtExtension(t.fileName));
+  }
+
+  async function shareSingleBatch(taskIndex) {
+    const t = extractionSession.tasks[taskIndex];
+    if (!t || !t.resultText) return;
+    await shareTextOrFile(t.resultText, ensureTxtExtension(t.fileName));
+  }
+
+  async function downloadAllCompletedBatches() {
+    for (let i = 0; i < extractionSession.tasks.length; i++) {
+      const t = extractionSession.tasks[i];
+      if (t.status === 'done' && t.resultText) {
+        triggerTxtDownload(t.resultText, ensureTxtExtension(t.fileName));
+        await interruptibleSleep(380);
+      }
+    }
+  }
+
+  function capTextAtThousandQuestions(mcqText) {
+    const blocks = mcqText.trim().split(/\n\s*\n/);
+    if (blocks.length <= 1000) return mcqText.trim();
+    return blocks.slice(0, 1000).join('\n\n');
+  }
+
+  function showSaveButtons() {
+    if (document.getElementById('output').value.trim().length > 0) {
+      updateSaveButtonLabels();
+      document.getElementById('shareBtn').style.display = 'block';
+      document.getElementById('downloadBtn').style.display = 'block';
+      document.getElementById('copyBtn').style.display = 'block';
+      if (appCategory === 'quiz') {
+        document.getElementById('nextQuizResetBtn').style.display = 'block';
+      }
+    }
+  }
+
+  // ---------------- UNIFIED EXTRACTION CONTROLLER (BOTH QUIZ & BOOK ARE NOW RESUMABLE!) ----------------
+  async function processExtraction() {
+    const keys = parseApiKeys(apiKeyInput.value);
+    const paceMode = document.getElementById('paceMode').value;
+    const status = document.getElementById('status');
+    const output = document.getElementById('output');
+
+    const pdfInput = document.getElementById('pdfFile');
+    const needsPdf = (appCategory === 'book' && (bookSubMode === 'splitted' || currentMode === 'pdf'))
+      || (appCategory === 'quiz' && (currentMode === 'pdf' || currentMode === 'all') && pdfInput.files.length > 0);
+
+    if (needsPdf && pdfInput.files.length > 0) {
+      status.textContent = 'Preparing PDF...';
+      try {
+        await ensurePdfLoadedFromInput();
+      } catch (e) {
+        status.textContent = 'PDF Error: ' + (e.message || e);
+        return;
+      }
+    }
+
+    const tasks = appCategory === 'book' ? buildBookTasksPreview() : buildQuizTasksList();
+    if (tasks.length === 0) {
+      if (appCategory === 'book' && bookSubMode === 'splitted') {
+        status.textContent = 'Please select a PDF and enter page ranges (e.g. 3-7, 8-12, 13-15) first.';
+      } else {
+        status.textContent = 'Please select a PDF, choose image(s), or paste MCQ text first.';
+      }
+      return;
+    }
+
+    const hasImages = tasks.some(t => t.type === 'img');
+    if (keys.length === 0 && (hasImages || paceMode === 'autorotate')) {
+      status.textContent = hasImages
+        ? 'Please add at least 1 Gemini API key in Box 1 (required for Image OCR).'
+        : 'Please add at least 1 Gemini API key in Box 1, or switch Engine Mode to Auto-Hybrid / Instant Local.';
+      return;
+    }
+
+    sessionRequestsDone = 0;
+    sessionRequestsPlanned = tasks.reduce((a, t) => a + t.apiCallsNeeded, 0);
+    updateLiveConsumptionTelemetry(keys[0] || 'LOCAL_ENGINE', document.getElementById('modelName').value.trim() || 'gemini-2.5-flash');
+
+    const customRules = document.getElementById('customRules').value.trim();
+    const systemPrompt = customRules
+      ? (buildStrictPrompt() + '\n\nIMPORTANT ADDITIONAL USER INSTRUCTIONS:\n' + customRules)
+      : buildStrictPrompt();
+
+    let globalKeyMap = {};
+    if (loadedPdfDoc && loadedPdfTotalPages > 1 && tasks.some(t => t.type === 'pdf')) {
+      status.textContent = 'Scanning final PDF pages for Answer Key tables...';
+      const keyPages = [Math.max(1, loadedPdfTotalPages - 1), loadedPdfTotalPages];
+      globalKeyMap = await pdfKeyMapFromPages(loadedPdfDoc, keyPages);
+      const foundKeysCount = Object.keys(globalKeyMap).length;
+      if (foundKeysCount > 0) logDiag('Detected global PDF Answer Key (' + foundKeysCount + ' answers).');
+    }
+
+    extractionSession = {
+      active: true,
+      category: appCategory,
+      tasks: tasks,
+      globalKeyMap: globalKeyMap,
+      systemPrompt: systemPrompt,
+      customRules: customRules
+    };
+
+    output.value = '';
+    document.getElementById('continueBanner').style.display = 'none';
+    document.getElementById('continueBtn').style.display = 'none';
+    document.getElementById('auditBanner').style.display = 'none';
+    document.getElementById('recoveryBanner').style.display = 'none';
+    renderBatchFilesUI();
+
+    await executeSessionTasksLoop();
+  }
+
+  async function continueActiveExtraction() {
+    slotCooldownUntil = {};
+    slotExhaustedToday = {};
+    if (!extractionSession.active || extractionSession.tasks.length === 0) {
+      await processExtraction();
+      return;
+    }
+    document.getElementById('continueBanner').style.display = 'none';
+    document.getElementById('continueBtn').style.display = 'none';
+    await executeSessionTasksLoop();
+  }
+
+  async function runSessionFromBatchIndex(startIndex) {
+    slotCooldownUntil = {};
+    if (!extractionSession.active || extractionSession.tasks.length === 0) {
+      await processExtraction();
+      return;
+    }
+    for (let j = startIndex; j < extractionSession.tasks.length; j++) {
+      if (extractionSession.tasks[j].status === 'paused') {
+        extractionSession.tasks[j].status = 'pending';
+      }
+    }
+    document.getElementById('continueBanner').style.display = 'none';
+    document.getElementById('continueBtn').style.display = 'none';
+    await executeSessionTasksLoop(startIndex);
+  }
+
+  async function reExtractSingleBatch(taskIndex) {
+    slotCooldownUntil = {};
+    const t = extractionSession.tasks[taskIndex];
+    if (!t) return;
+    t.status = 'pending';
+    t.usedLocalFallback = false;
+    t.resultText = '';
+    t.completedSubIdx = 0;
+    t.partialSubResults = [];
+    renderBatchFilesUI();
+    await executeSessionTasksLoop(taskIndex, taskIndex);
+    rebuildCombinedOutputFromSession();
+    renderCompletenessAudit(document.getElementById('output').value);
+  }
+
+  async function executeSessionTasksLoop(forceStartIdx, forceEndIdx) {
+    const primaryModel = document.getElementById('modelName').value.trim() || 'gemini-2.5-flash';
+    const models = getModelCandidates(primaryModel);
+    const customRules = extractionSession.customRules || '';
+
+    const status = document.getElementById('status');
+    const output = document.getElementById('output');
+    const extractBtn = document.getElementById('extractBtn');
+    const stopBtn = document.getElementById('stopBtn');
+    const continueBtn = document.getElementById('continueBtn');
+    const continueBanner = document.getElementById('continueBanner');
+    const progressWrap = document.getElementById('progressWrap');
+    const progressBar = document.getElementById('progressBar');
+
+    stopRequested = false;
+    extractBtn.disabled = true;
+    stopBtn.style.display = 'block';
+    progressWrap.style.display = 'block';
+    await acquireWakeLock();
+
+    const tasks = extractionSession.tasks;
+    const totalTasks = tasks.length;
+    const startI = typeof forceStartIdx === 'number' ? forceStartIdx : 0;
+    const endI = typeof forceEndIdx === 'number' ? forceEndIdx : (totalTasks - 1);
+    let lastErrorMsg = '';
+
+    try {
+      for (let i = startI; i <= endI; i++) {
+        if (stopRequested) break;
+        const task = tasks[i];
+        if (task.status === 'done') continue;
+
+        if (extractionSession.category === 'book' && bookSubMode === 'general') {
+          const currentTotalQs = (output.value.match(/^Q:\s+/gm) || []).length;
+          if (currentTotalQs >= 1000) {
+            output.value = capTextAtThousandQuestions(output.value);
+            status.textContent = 'Reached General Book maximum of 1,000 extracted MCQs ✓';
+            break;
+          }
+        }
+
+        task.status = 'running';
+        renderBatchFilesUI();
+
+        const doneSoFar = tasks.filter(t => t.status === 'done').length;
+        const pct = Math.round((doneSoFar / totalTasks) * 100);
+        progressBar.style.width = Math.max(8, pct) + '%';
+
+        const activeKeys = parseApiKeys(apiKeyInput.value);
+
+        if (task.type === 'pdf') {
+          const pdfDoc = await ensurePdfLoadedFromInput();
+          if (!pdfDoc) throw new Error('PDF file not loaded — please re-select the PDF.');
+
+          const subChunkSize = extractionSession.category === 'book' ? 5 : 3;
+          const subChunks = [];
+          for (let c = 0; c < task.pages.length; c += subChunkSize) {
+            subChunks.push(task.pages.slice(c, c + subChunkSize));
+          }
+          const rangeLastPage = task.pages[task.pages.length - 1];
+
+          let anySubLocal = false;
+          for (let sIdx = task.completedSubIdx; sIdx < subChunks.length; sIdx++) {
+            if (stopRequested) break;
+            const subPages = subChunks[sIdx];
+            const pStart = subPages[0];
+            const pEnd = subPages[subPages.length - 1];
+            const stepLabel = subChunks.length === 1
+              ? ('Extracting ' + task.title)
+              : ('Extracting ' + task.title + ' [Part ' + (sIdx + 1) + '/' + subChunks.length + ': Pages ' + pStart + '–' + pEnd + ']');
+
+            status.textContent = stepLabel + '...';
+
+            const subRes = await extractPdfSubBatchGuaranteed(
+              pdfDoc, subPages, rangeLastPage, extractionSession.globalKeyMap,
+              extractionSession.systemPrompt, customRules, activeKeys, models, status, stepLabel
+            );
+
+            if (stopRequested) break;
+            if (subRes.text && subRes.text.trim()) task.partialSubResults.push(subRes.text.trim());
+            if (subRes.usedLocal) anySubLocal = true;
+            task.completedSubIdx = sIdx + 1;
+          }
+
+          if (!stopRequested && task.completedSubIdx >= subChunks.length) {
+            task.resultText = dedupeMcqText(task.partialSubResults.join('\n\n').trim());
+            task.usedLocalFallback = anySubLocal;
+            task.status = 'done';
+            rebuildCombinedOutputFromSession();
+
+            if (extractionSession.category === 'book' && bookSubMode === 'splitted' &&
+                document.getElementById('autoDownloadRanges').checked && task.resultText) {
+              triggerTxtDownload(task.resultText, ensureTxtExtension(task.fileName));
+            }
+            renderBatchFilesUI();
+          } else {
+            task.status = 'paused';
+            renderBatchFilesUI();
+          }
+        } else if (task.type === 'img') {
+          const stepLabel = 'Extracting ' + task.title;
+          status.textContent = stepLabel + '...';
+
+          const imgRes = await extractImageBatchGuaranteed(
+            task.imgFiles, extractionSession.systemPrompt, customRules, activeKeys, models, status, stepLabel
+          );
+
+          if (!stopRequested) {
+            task.resultText = (imgRes.text || '').trim();
+            task.usedLocalFallback = false;
+            task.status = 'done';
+            rebuildCombinedOutputFromSession();
+            renderBatchFilesUI();
+          } else {
+            task.status = 'paused';
+            renderBatchFilesUI();
+          }
+        } else if (task.type === 'text') {
+          const stepLabel = 'Extracting ' + task.title;
+          status.textContent = stepLabel + '...';
+
+          const txtRes = await extractTextChunkGuaranteed(
+            task.textChunk, task.keyMap || {}, extractionSession.systemPrompt, customRules, activeKeys, models, status, stepLabel
+          );
+
+          if (!stopRequested) {
+            task.resultText = (txtRes.text || '').trim();
+            task.usedLocalFallback = !!txtRes.usedLocal;
+            task.status = 'done';
+            rebuildCombinedOutputFromSession();
+            renderBatchFilesUI();
+          } else {
+            task.status = 'paused';
+            renderBatchFilesUI();
+          }
+        }
+      }
+    } catch (err) {
+      lastErrorMsg = err.message || String(err);
+      for (const t of tasks) {
+        if (t.status === 'running') t.status = 'paused';
+      }
+      logDiag('Extraction paused due to error: ' + lastErrorMsg);
+      const qCount = (output.value.match(/^Q:\s+/gm) || []).length;
+      status.textContent = 'Paused (' + lastErrorMsg + '). ' + qCount + ' MCQs saved safely — tap Continue to resume!';
+    } finally {
+      await releaseWakeLock();
+      extractBtn.disabled = false;
+      stopBtn.style.display = 'none';
+      renderSavedKeysVault();
+      renderBatchFilesUI();
+      updateProjectConsumptionPlanner();
+    }
+
+    const finalOutput = rebuildCombinedOutputFromSession();
+    renderCompletenessAudit(finalOutput);
+
+    const doneTasks = tasks.filter(t => t.status === 'done');
+    const pendingTasks = tasks.filter(t => t.status !== 'done');
+    const totalQs = (finalOutput.match(/^Q:\s+/gm) || []).length;
+
+    if (pendingTasks.length === 0) {
+      progressBar.style.width = '100%';
+      lastQuizCompletedFlag = true;
+      status.textContent = 'Order up! Finished all ' + doneTasks.length + ' batch(es) — ' + totalQs + ' MCQs ready ✓';
+      continueBanner.style.display = 'none';
+      continueBtn.style.display = 'none';
+      output.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    } else {
+      const doneListStr = summarizeBatchRangeList(doneTasks);
+      const remListStr = summarizeBatchRangeList(pendingTasks);
+      continueBanner.innerHTML =
+        '⏸️ <b>Paused Safely (' + doneTasks.length + '/' + totalTasks + ' batches done • ' + totalQs + ' MCQs saved)!</b><br>' +
+        (lastErrorMsg ? ('ℹ️ <b>Reason:</b> ' + lastErrorMsg + '<br>') : '') +
+        '✅ <b>Completed (' + doneTasks.length + '):</b> ' + doneListStr + '<br>' +
+        '⏳ <b>Remaining (' + pendingTasks.length + '):</b> ' + remListStr + '<br>' +
+        '💡 No restart needed! Tap <b>⚡ Continue / Resume Remaining Batches</b> below (or add another API key in Box 1 first) to finish the rest.';
+      continueBanner.style.display = 'block';
+      continueBtn.style.display = 'block';
+    }
+  }
+
+  // ---------------- APK-SAFE DOWNLOAD, SHARE & COPY ----------------
+  function getTxtFileName() {
+    const customMain = stripTxtExtension(document.getElementById('mainCustomFileName').value);
+    if (customMain) return ensureTxtExtension(customMain);
+
+    const pdfInput = document.getElementById('pdfFile');
+    const imgInput = document.getElementById('imgFiles');
+    if ((currentMode === 'pdf' || currentMode === 'all') && pdfInput.files.length > 0) {
+      return pdfInput.files[0].name.replace(/\.pdf$/i, '') + '_mcqs.txt';
+    }
+    if ((currentMode === 'img' || currentMode === 'all') && imgInput.files.length > 0) {
+      return imgInput.files[0].name.replace(/\.[^.]+$/, '') + '_mcqs.txt';
+    }
+    return appCategory === 'book' ? 'extracted_book_mcqs.txt' : 'extracted_quiz_mcqs.txt';
+  }
+
+  function triggerTxtDownload(textContent, fileName) {
+    const safeName = ensureTxtExtension(fileName);
+    try {
+      const blob = new Blob([textContent], { type: 'text/plain;charset=utf-8' });
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = safeName;
+      a.style.display = 'none';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(function() { try { URL.revokeObjectURL(blobUrl); } catch (e) {} }, 12000);
+    } catch (e) {
+      // Fallback data URI for restricted Android WebViews
+      try {
+        const a2 = document.createElement('a');
+        a2.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(textContent);
+        a2.download = safeName;
+        document.body.appendChild(a2);
+        a2.click();
+        document.body.removeChild(a2);
+      } catch (e2) {}
+    }
+  }
+
+  async function shareTextOrFile(textContent, fileName) {
+    const safeName = ensureTxtExtension(fileName);
+    try {
+      const file = new File([textContent], safeName, { type: 'text/plain' });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({ files: [file], title: safeName });
+        return;
+      }
+    } catch (e) {}
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: safeName, text: textContent });
+        return;
+      }
+    } catch (e) {}
+    triggerTxtDownload(textContent, safeName);
+  }
+
+  async function shareTxtFile() {
+    const text = document.getElementById('output').value;
+    if (!text) return;
+    await shareTextOrFile(text, getTxtFileName());
+  }
+
+  function downloadTxt() {
+    const text = document.getElementById('output').value;
+    if (!text) return;
+    triggerTxtDownload(text, getTxtFileName());
+  }
+
+  async function copyText() {
+    const output = document.getElementById('output');
+    const text = output.value;
+    if (!text) return;
+    let copied = false;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      try {
+        await navigator.clipboard.writeText(text);
+        copied = true;
+      } catch (e) {}
+    }
+    if (!copied) {
+      try {
+        const prevReadOnly = output.readOnly;
+        output.readOnly = false;
+        output.focus();
+        output.select();
+        output.setSelectionRange(0, text.length);
+        copied = document.execCommand('copy');
+        output.readOnly = prevReadOnly;
+      } catch (e) {}
+    }
+    const btn = document.getElementById('copyBtn');
+    btn.textContent = copied ? '✅ Copied to Clipboard!' : '⚠️ Long-press box below & Select All → Copy';
+    setTimeout(function() { btn.textContent = '📋 Copy Extracted Text'; }, 2000);
+  }
+
+  // ---------------- BACKGROUND MUSIC PLAYER (PERSISTENT VIA INDEXEDDB + APK SAFE) ----------------
+  let bgAudioEl = null;
+  let bgMusicObjectUrl = null;
+  let bgMusicFileName = '';
+  const BG_MUSIC_DB_NAME = 'spongebob_mcq_music_db_v1';
+  const BG_MUSIC_STORE = 'tracks';
+
+  function openBgMusicDb() {
+    return new Promise(function(resolve, reject) {
+      if (!('indexedDB' in window)) { reject(new Error('No IndexedDB')); return; }
+      const req = indexedDB.open(BG_MUSIC_DB_NAME, 1);
+      req.onupgradeneeded = function(e) {
+        const db = e.target.result;
+        if (!db.objectStoreNames.contains(BG_MUSIC_STORE)) {
+          db.createObjectStore(BG_MUSIC_STORE);
+        }
+      };
+      req.onsuccess = function(e) { resolve(e.target.result); };
+      req.onerror = function(e) { reject(e.target.error || new Error('IDB error')); };
+    });
+  }
+
+  async function saveBgMusicToIdb(fileName, mimeType, arrayBuffer) {
+    try {
+      const db = await openBgMusicDb();
+      const tx = db.transaction(BG_MUSIC_STORE, 'readwrite');
+      tx.objectStore(BG_MUSIC_STORE).put({ name: fileName, type: mimeType, data: arrayBuffer, savedAt: Date.now() }, 'current_track');
+      await new Promise(function(res, rej) {
+        tx.oncomplete = res;
+        tx.onerror = rej;
+      });
+    } catch (e) {}
+  }
+
+  async function loadBgMusicFromIdb() {
+    try {
+      const db = await openBgMusicDb();
+      const tx = db.transaction(BG_MUSIC_STORE, 'readonly');
+      const req = tx.objectStore(BG_MUSIC_STORE).get('current_track');
+      const rec = await new Promise(function(res, rej) {
+        req.onsuccess = function() { res(req.result); };
+        req.onerror = function() { rej(req.error); };
+      });
+      if (rec && rec.data) {
+        const blob = new Blob([rec.data], { type: rec.type || 'audio/mpeg' });
+        mountBgMusicBlob(blob, rec.name || 'Saved Music', false);
+      }
+    } catch (e) {}
+  }
+
+  async function clearBgMusicIdb() {
+    try {
+      const db = await openBgMusicDb();
+      const tx = db.transaction(BG_MUSIC_STORE, 'readwrite');
+      tx.objectStore(BG_MUSIC_STORE).delete('current_track');
+    } catch (e) {}
+  }
+
+  function ensureBgAudioElement() {
+    if (!bgAudioEl) {
+      bgAudioEl = new Audio();
+      bgAudioEl.loop = true;
+      bgAudioEl.preload = 'auto';
+      const volSlider = document.getElementById('bgMusicVol');
+      bgAudioEl.volume = volSlider ? parseFloat(volSlider.value) : 0.35;
+      bgAudioEl.addEventListener('play', updateBgMusicUiState);
+      bgAudioEl.addEventListener('pause', updateBgMusicUiState);
+      bgAudioEl.addEventListener('error', function() {
+        const lbl = document.getElementById('bgMusicTrackLabel');
+        if (lbl && bgMusicFileName) lbl.textContent = '⚠️ Unsupported audio format: ' + bgMusicFileName;
+      });
+    }
+    return bgAudioEl;
+  }
+
+  function updateBgMusicUiState() {
+    const playBtn = document.getElementById('bgMusicPlayBtn');
+    const clearBtn = document.getElementById('bgMusicClearBtn');
+    const lbl = document.getElementById('bgMusicTrackLabel');
+    const hasTrack = !!(bgAudioEl && bgAudioEl.src);
+    if (playBtn) {
+      playBtn.style.display = hasTrack ? 'inline-block' : 'none';
+      playBtn.textContent = (hasTrack && !bgAudioEl.paused) ? '⏸️ Pause' : '▶️ Play';
+    }
+    if (clearBtn) clearBtn.style.display = hasTrack ? 'inline-block' : 'none';
+    if (lbl && hasTrack) {
+      const playingPrefix = (!bgAudioEl.paused) ? '🎶 ' : '🎵 ';
+      lbl.textContent = playingPrefix + bgMusicFileName;
+      lbl.title = bgMusicFileName;
+    }
+  }
+
+  function mountBgMusicBlob(blob, fileName, autoPlay) {
+    const aud = ensureBgAudioElement();
+    if (bgMusicObjectUrl) {
+      try { URL.revokeObjectURL(bgMusicObjectUrl); } catch (e) {}
+      bgMusicObjectUrl = null;
+    }
+    bgMusicObjectUrl = URL.createObjectURL(blob);
+    bgMusicFileName = fileName || 'Background Music';
+    aud.src = bgMusicObjectUrl;
+    updateBgMusicUiState();
+    if (autoPlay) {
+      aud.play().then(updateBgMusicUiState).catch(function() {
+        updateBgMusicUiState();
+      });
+    }
+  }
+
+  async function handleBgMusicUpload(inputEl) {
+    if (!inputEl || !inputEl.files || !inputEl.files.length) return;
+    const file = inputEl.files[0];
+    const fName = file.name || 'background_music';
+    const fType = file.type || 'audio/mpeg';
+    mountBgMusicBlob(file, fName, true);
+    logDiag('Loaded background music: ' + fName + ' (' + (file.size / (1024 * 1024)).toFixed(2) + ' MB)');
+    try {
+      const buf = await file.arrayBuffer();
+      await saveBgMusicToIdb(fName, fType, buf);
+    } catch (e) {}
+    inputEl.value = '';
+  }
+
+  function toggleBgMusicPlay() {
+    if (!bgAudioEl || !bgAudioEl.src) return;
+    if (bgAudioEl.paused) {
+      bgAudioEl.play().then(updateBgMusicUiState).catch(function() { updateBgMusicUiState(); });
+    } else {
+      bgAudioEl.pause();
+      updateBgMusicUiState();
+    }
+  }
+
+  function setBgMusicVolume(val) {
+    const v = Math.max(0, Math.min(1, parseFloat(val) || 0));
+    if (bgAudioEl) bgAudioEl.volume = v;
+  }
+
+  async function clearBgMusic() {
+    if (bgAudioEl) {
+      try { bgAudioEl.pause(); bgAudioEl.removeAttribute('src'); bgAudioEl.load(); } catch (e) {}
+    }
+    if (bgMusicObjectUrl) {
+      try { URL.revokeObjectURL(bgMusicObjectUrl); } catch (e) {}
+      bgMusicObjectUrl = null;
+    }
+    bgMusicFileName = '';
+    const lbl = document.getElementById('bgMusicTrackLabel');
+    if (lbl) lbl.textContent = 'No background music loaded';
+    updateBgMusicUiState();
+    await clearBgMusicIdb();
+  }
+
+  // Unlock audio cleanly on first tap if a saved track was restored
+  document.addEventListener('pointerdown', function unlockSavedBgMusicOnce() {
+    if (bgAudioEl && bgAudioEl.src && bgAudioEl.paused) {
+      bgAudioEl.play().then(updateBgMusicUiState).catch(function() {});
+    }
+    document.removeEventListener('pointerdown', unlockSavedBgMusicOnce);
+  }, { passive: true });
+
+  loadBgMusicFromIdb();
+
+  // ---------------- PWA INSTALL & SERVICE WORKER (GITHUB PAGES) ----------------
+  let deferredPwaPrompt = null;
+
+  window.addEventListener('beforeinstallprompt', function(e) {
+    e.preventDefault();
+    deferredPwaPrompt = e;
+    const btn = document.getElementById('pwaInstallBtn');
+    if (btn) btn.style.display = 'inline-block';
+  });
+
+  window.addEventListener('appinstalled', function() {
+    deferredPwaPrompt = null;
+    const btn = document.getElementById('pwaInstallBtn');
+    if (btn) btn.style.display = 'none';
+    logDiag('App installed to Home Screen as a PWA.');
+  });
+
+  async function triggerPwaInstall() {
+    if (!deferredPwaPrompt) return;
+    try {
+      deferredPwaPrompt.prompt();
+      await deferredPwaPrompt.userChoice;
+    } catch (e) {}
+    deferredPwaPrompt = null;
+    const btn = document.getElementById('pwaInstallBtn');
+    if (btn) btn.style.display = 'none';
+  }
+
+  if ('serviceWorker' in navigator && /^https?:$/i.test(location.protocol)) {
+    window.addEventListener('load', function() {
+      navigator.serviceWorker.register('./sw.js', { scope: './' })
+        .then(function(reg) {
+          logDiag('PWA Service Worker registered (auto-updates enabled).');
+          try { reg.update(); } catch (e) {}
+        })
+        .catch(function(err) {
+          logDiag('SW registration note: ' + (err && err.message ? err.message : err));
+        });
+    });
+  }
+
+</script>
+</body>
+</html>
